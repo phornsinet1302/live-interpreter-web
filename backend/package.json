@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx ../prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "schema": "../prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6",
+    "bcryptjs": "^2",
+    "cors": "^2",
+    "express": "^5",
+    "jsonwebtoken": "^9",
+    "openai": "^4",
+    "socket.io": "^4",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2",
+    "@types/cors": "^2",
+    "@types/express": "^5",
+    "@types/jsonwebtoken": "^9",
+    "@types/node": "^20",
+    "prisma": "^6",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
