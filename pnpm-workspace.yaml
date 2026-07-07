@@ -2,9 +2,10 @@ packages:
   - "frontend"
   - "backend"
 
-allowBuilds:
-  sharp: true
-  unrs-resolver: true
-ignoredBuiltDependencies:
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - prisma
+  - esbuild
   - sharp
   - unrs-resolver
