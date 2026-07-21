@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"require('fs').cpSync('src/generated','dist/generated',{recursive:true})\"",
     "start": "node dist/server.js",
     "lint": "eslint src",
     "db:generate": "prisma generate",
@@ -17,9 +17,13 @@
     "bcryptjs": "^2",
     "cors": "^2",
     "express": "^5",
+    "express-rate-limit": "^7",
+    "google-auth-library": "^9",
     "jsonwebtoken": "^9",
     "openai": "^4",
     "socket.io": "^4",
+    "swagger-jsdoc": "^6",
+    "swagger-ui-express": "^5",
     "zod": "^3"
   },
   "devDependencies": {
