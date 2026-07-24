@@ -1,0 +1,325 @@
+generator client {
+  provider = "prisma-client-js"
+  // Generated straight into the repo (not node_modules/@prisma/client).
+  // pnpm's virtual store was resolving two different physical copies of
+  // "@prisma/client" for this workspace, leaving the backend permanently on
+  // a stale client no matter where `prisma generate` wrote its output. A
+  // repo-local output sidesteps that resolution ambiguity entirely — see
+  // backend/src/lib/prisma-client.ts for the single import indirection.
+  output   = "../backend/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  user
+  admin
+
+  @@map("user_role")
+}
+
+enum ConversationStatus {
+  waiting
+  active
+  paused
+  ended
+
+  @@map("conversation_status")
+}
+
+enum ExportStatus {
+  pending
+  processing
+  completed
+  failed
+
+  @@map("export_status")
+}
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+
+  @@map("notification_type")
+}
+
+enum SuggestionPriority {
+  low
+  medium
+  high
+
+  @@map("suggestion_priority")
+}
+
+enum SubtitleStatus {
+  active
+  inactive
+
+  @@map("subtitle_status")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 1. users
+// ──────────────────────────────────────────────────────────────────────────
+
+model User {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  passwordHash      String?   @map("password_hash")
+  googleId          String?   @unique @map("google_id")
+  avatarUrl         String?   @map("avatar_url")
+  preferredLanguage String    @default("en") @map("preferred_language")
+  theme             String    @default("system")
+  role              UserRole  @default(user)
+  isVerified        Boolean   @default(false) @map("is_verified")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  sessions      Session[]
+  conversations Conversation[]
+  exports       Export[]
+  notifications Notification[]
+  apiUsageLogs  ApiUsageLog[]
+  auditLogs     AuditLog[]
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 2. sessions — stores refresh tokens
+// ──────────────────────────────────────────────────────────────────────────
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  refreshToken String   @unique @map("refresh_token")
+  deviceName   String?  @map("device_name")
+  deviceType   String?  @map("device_type")
+  ipAddress    String?  @map("ip_address")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 3. conversations — a single live interpretation session
+// ──────────────────────────────────────────────────────────────────────────
+
+model Conversation {
+  id             String             @id @default(uuid())
+  ownerId        String             @map("owner_id")
+  title          String?
+  sourceLanguage String             @map("source_language")
+  targetLanguage String             @map("target_language")
+  status         ConversationStatus @default(waiting)
+  startedAt      DateTime?          @map("started_at")
+  endedAt        DateTime?          @map("ended_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  owner            User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  messages         ConversationMessage[]
+  speakers         Speaker[]
+  summary          Summary?
+  suggestedActions SuggestedAction[]
+  subtitleSession  SubtitleSession?
+  exports          Export[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("conversations")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 4. conversation_messages — each spoken sentence + translation
+// ──────────────────────────────────────────────────────────────────────────
+
+model ConversationMessage {
+  id                   String   @id @default(uuid())
+  conversationId       String   @map("conversation_id")
+  speakerId            String?  @map("speaker_id")
+  originalText         String   @map("original_text")
+  translatedText       String?  @map("translated_text")
+  sourceLanguage       String   @map("source_language")
+  targetLanguage       String   @map("target_language")
+  translationProvider  String?  @map("translation_provider")
+  confidence           Float?
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  speaker      Speaker?      @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([speakerId])
+  @@map("conversation_messages")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 5. speakers
+// ──────────────────────────────────────────────────────────────────────────
+
+model Speaker {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  label          String
+  displayName    String?  @map("display_name")
+  confidence     Float?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  messages     ConversationMessage[]
+
+  @@index([conversationId])
+  @@map("speakers")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 6. summaries
+// ──────────────────────────────────────────────────────────────────────────
+
+model Summary {
+  id             String   @id @default(uuid())
+  conversationId String   @unique @map("conversation_id")
+  summary        String
+  keyPoints      Json     @map("key_points")
+  actionItems    Json     @map("action_items")
+  keywords       Json
+  generatedAt    DateTime @default(now()) @map("generated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("summaries")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 7. suggested_actions
+// ──────────────────────────────────────────────────────────────────────────
+
+model SuggestedAction {
+  id             String             @id @default(uuid())
+  conversationId String             @map("conversation_id")
+  suggestion     String
+  priority       SuggestionPriority @default(medium)
+  createdAt      DateTime           @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("suggested_actions")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 8. subtitle_sessions
+// ──────────────────────────────────────────────────────────────────────────
+
+model SubtitleSession {
+  id              String         @id @default(uuid())
+  conversationId  String         @unique @map("conversation_id")
+  sessionCode     String         @unique @map("session_code")
+  fontSize        Int            @default(24) @map("font_size")
+  fontColor       String         @default("#FFFFFF") @map("font_color")
+  backgroundColor String         @default("#000000") @map("background_color")
+  status          SubtitleStatus @default(active)
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("subtitle_sessions")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 9. exports
+// ──────────────────────────────────────────────────────────────────────────
+
+model Export {
+  id             String       @id @default(uuid())
+  conversationId String       @map("conversation_id")
+  userId         String       @map("user_id")
+  type           String
+  fileUrl        String?      @map("file_url")
+  status         ExportStatus @default(pending)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@map("exports")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 10. notifications
+// ──────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  title     String
+  message   String
+  type      NotificationType @default(info)
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 11. api_usage_logs
+// ──────────────────────────────────────────────────────────────────────────
+
+model ApiUsageLog {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  endpoint     String
+  method       String
+  statusCode   Int      @map("status_code")
+  responseTime Int      @map("response_time")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("api_usage_logs")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 12. audit_logs
+// ──────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  resource  String
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

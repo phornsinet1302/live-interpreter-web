@@ -10,6 +10,12 @@
 !.yarn/releases
 !.yarn/versions
 
+# generated Prisma client (regenerated via `pnpm db:generate`)
+backend/src/generated/
+
+# generated file exports and uploads
+backend/uploads/
+
 # testing
 /coverage
 
@@ -19,6 +25,7 @@
 
 # production
 /build
+/backend/dist
 
 # misc
 .DS_Store

@@ -1,0 +1,19 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // Override the base's ESM settings: `node dist/server.js` runs the
+    // compiled output directly with no bundler, and tsc's ESM output uses
+    // extensionless specifiers (e.g. "./config/env") that Node's ESM loader
+    // refuses to resolve. CommonJS output matches plain `node` execution.
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
