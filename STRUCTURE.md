@@ -2,19 +2,6 @@
 
 ```
 live-interpreter-web/
-├── frontend/            # Next.js 16 Web UI (App Router)
-│   ├── app/             #   ROUTES only: pages, layouts, route groups
-│   │   ├── (public)/    #     login, register, forgot-password
-│   │   └── (dashboard)/ #     dashboard, translator, history, profile, settings
-│   ├── src/             #   everything imported by app/
-│   │   ├── components/  #     common forms translator dashboard history profile ui
-│   │   ├── hooks/       #     useAuth useTranslation useSocket usePagination
-│   │   ├── services/    #     HTTP clients that call the backend API
-│   │   ├── store/       #     zustand stores
-│   │   ├── providers/   #     Auth / Socket / Theme
-│   │   └── lib/ types/
-│   ├── next.config.ts  tsconfig.json  package.json
-│
 ├── backend/             # Node.js + Express API (also serves the future mobile app)
 │   ├── src/
 │   │   ├── server.ts    #   boot: http + websocket
@@ -36,7 +23,7 @@ live-interpreter-web/
 ├── public/              # static assets
 │
 ├── package.json         # workspace root scripts (dev / build / lint)
-├── pnpm-workspace.yaml  # packages: frontend, backend
+├── pnpm-workspace.yaml  # packages: backend
 ├── tsconfig.base.json   # shared compiler options
 └── README.md
 ```
@@ -60,10 +47,8 @@ Call direction: **route → controller → service → repository**. Never skip 
 ## Commands
 
 ```bash
-pnpm install          # install frontend + backend
-pnpm dev              # run frontend + backend together
-pnpm dev:frontend     # frontend only (http://localhost:3000)
-pnpm dev:backend      # backend only  (http://localhost:4000)
+pnpm install          # install backend dependencies
+pnpm dev              # backend only (http://localhost:4000)
 pnpm db:migrate       # prisma migrate (schema in /prisma)
 ```
 
@@ -71,8 +56,5 @@ pnpm db:migrate       # prisma migrate (schema in /prisma)
 
 - **`prisma/` lives at the repo root** (shared). `backend/package.json` points Prisma
   at it via `"prisma": { "schema": "../prisma/schema.prisma" }`.
-- **`public/` at the root** holds shared static assets. Note: Next.js only serves
-  files from `frontend/public/`, so web-app assets referenced as `/foo.svg` must go
-  there — create `frontend/public/` when the web app needs its own static files.
+- **`public/` at the root** holds shared static assets.
 - The **mobile app** is a separate project; it consumes `backend` over HTTP/WebSocket.
-```

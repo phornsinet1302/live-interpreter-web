@@ -3,9 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel --filter frontend --filter backend dev",
-    "dev:frontend": "pnpm --filter frontend dev",
-    "dev:backend": "pnpm --filter backend dev",
+    "dev": "pnpm --filter backend dev",
     "build": "pnpm --recursive build",
     "lint": "pnpm --recursive lint",
     "db:migrate": "pnpm --filter backend db:migrate",

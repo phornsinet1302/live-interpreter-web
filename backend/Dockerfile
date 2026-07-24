@@ -8,7 +8,6 @@ WORKDIR /app
 FROM base AS deps
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY backend/package.json ./backend/package.json
-COPY frontend/package.json ./frontend/package.json
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
