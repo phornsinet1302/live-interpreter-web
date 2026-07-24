@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,15 +10,22 @@
 !.yarn/releases
 !.yarn/versions
 
+# generated Prisma client (regenerated via `pnpm db:generate`)
+backend/src/generated/
+
+# generated file exports and uploads
+backend/uploads/
+
 # testing
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
 /build
+/backend/dist
 
 # misc
 .DS_Store
