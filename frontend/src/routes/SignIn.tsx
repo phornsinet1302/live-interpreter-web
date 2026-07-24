@@ -55,7 +55,7 @@ export default function SignInPage({
           <div className="max-w-sm w-full mx-auto">
             <p className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-3">Welcome back</p>
             <h1 className="font-['Playfair_Display'] font-black text-4xl md:text-5xl leading-[1.05] text-foreground mb-2">
-              Sign in to<br /><em className="italic">Lingua</em>
+              Sign in to<br /><em className="italic">Fluent</em>
             </h1>
             <p className="text-sm text-muted-foreground mb-10 font-['DM_Sans']">
               Continue where you left off.

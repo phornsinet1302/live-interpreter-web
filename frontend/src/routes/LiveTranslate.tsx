@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeftRight, Globe, Mic, MicOff } from "lucide-react";
+import { ArrowLeftRight, Mic, MicOff } from "lucide-react";
 import { UserAccount } from "@/types";
 import { DEMO_PHRASES, DEMO_TRANSLATIONS } from "@/lib/api/utils/constant";
 import BotanicalLeft from "@/components/ui/common/BotanicalLeft";
 import BotanicalRight from "@/components/ui/common/BotanicalRight";
+import Logo from "@/components/ui/common/Logo";
 import ExitModal from "@/components/ui/features/translation/ExitModal";
 import AudioVisualizer from "@/components/ui/features/translation/AudioVisualizer";
 import UserNav from "@/components/ui/layout/UserNav";
 
 export default function LiveTranslatePage({
-  sourceLang,
-  targetLang,
+  sourceLang: initialSourceLang,
+  targetLang: initialTargetLang,
   user,
   onGoAbout,
   onGoSignIn,
@@ -27,6 +28,8 @@ export default function LiveTranslatePage({
   onGoHistory: () => void;
   onSignOut: () => void;
 }) {
+  const [sourceLang, setSourceLang] = useState(initialSourceLang);
+  const [targetLang, setTargetLang] = useState(initialTargetLang);
   const [listening, setListening] = useState(false);
   const [spokenText, setSpokenText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
@@ -78,6 +81,15 @@ export default function LiveTranslatePage({
     else startListening();
   };
 
+  const swapLanguages = () => {
+    if (listening || status === "translating") return;
+    setSourceLang(targetLang);
+    setTargetLang(sourceLang);
+    setSpokenText("");
+    setTranslatedText("");
+    setStatus("idle");
+  };
+
   useEffect(() => {
     return () => {
       clearInterval(intervalRef.current!);
@@ -113,10 +125,7 @@ export default function LiveTranslatePage({
         <button onClick={onGoAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 font-['DM_Sans']">
           About
         </button>
-        <div className="flex items-center gap-2">
-          <Globe size={18} className="text-accent" />
-          <span className="font-['Playfair_Display'] font-bold text-lg tracking-tight">Lingua</span>
-        </div>
+        <Logo size="text-lg" />
         <div className="flex items-center gap-3">
           {user ? (
             <UserNav user={user} onHistory={onGoHistory} onSignOut={onSignOut} />
@@ -147,11 +156,16 @@ export default function LiveTranslatePage({
           <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Speaking</p>
           <p className="font-['Playfair_Display'] font-bold text-base text-foreground">{sourceLang}</p>
         </div>
-        <div className="flex items-center gap-1 text-muted-foreground/40 pb-1">
+        <button
+          onClick={swapLanguages}
+          disabled={listening || status === "translating"}
+          className="flex items-center gap-1 text-muted-foreground/40 hover:text-accent disabled:opacity-40 disabled:cursor-not-allowed pb-1 transition-colors duration-150"
+          aria-label="Swap languages"
+        >
           <div className="w-8 h-px bg-border" />
           <ArrowLeftRight size={12} />
           <div className="w-8 h-px bg-border" />
-        </div>
+        </button>
         <div className="text-center">
           <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Translating to</p>
           <p className="font-['Playfair_Display'] font-bold text-base text-accent">{targetLang}</p>

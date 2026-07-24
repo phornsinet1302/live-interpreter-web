@@ -1,5 +1,5 @@
-import { Globe } from "lucide-react";
 import UserNav from "./UserNav";
+import Logo from "@/components/ui/common/Logo";
 import { UserAccount } from "@/types";
 
 export default function Navbar({
@@ -19,9 +19,8 @@ export default function Navbar({
 }) {
   return (
     <nav className="flex items-center justify-between px-8 md:px-16 py-5 border-b border-border/50">
-      <button onClick={onLive} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <Globe size={22} className="text-accent" />
-        <span className="font-['Playfair_Display'] font-bold text-xl tracking-tight">Lingua</span>
+      <button onClick={onLive} className="hover:opacity-80 transition-opacity">
+        <Logo size="text-xl" />
       </button>
       <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
         <a href="#" className="hover:text-foreground transition-colors duration-200">Features</a>

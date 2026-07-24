@@ -1,6 +1,6 @@
 import BotanicalLeft from "./BotanicalLeft";
 import BotanicalRight from "./BotanicalRight";
-import { Globe } from "lucide-react";
+import Logo from "./Logo";
 
 export default function AuthBotanicalPanel() {
   return (
@@ -14,9 +14,8 @@ export default function AuthBotanicalPanel() {
       <div className="absolute top-16 right-16 w-32 h-32 rounded-full border border-white/10" />
       <div className="absolute top-20 right-20 w-20 h-20 rounded-full border border-white/8" />
       <div className="relative z-10 text-center">
-        <div className="flex items-center justify-center gap-2 mb-10">
-          <Globe size={22} className="text-accent" />
-          <span className="font-['Playfair_Display'] font-bold text-xl text-white tracking-tight">Lingua</span>
+        <div className="flex items-center justify-center mb-10">
+          <Logo size="text-xl" light />
         </div>
         <h2 className="font-['Playfair_Display'] font-black text-4xl md:text-5xl text-white leading-[1.1] mb-5">
           Speak every<br /><em className="italic text-accent">language</em><br />fluently.

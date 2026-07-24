@@ -6,6 +6,7 @@ import PlatformSection from "@/components/ui/features/marketing/PlatformSection"
 import LanguageSelect from "@/components/ui/features/translation/LanguageSelect";
 import BotanicalLeft from "@/components/ui/common/BotanicalLeft";
 import BotanicalRight from "@/components/ui/common/BotanicalRight";
+import { useInView } from "@/hooks/useInView";
 import { UserAccount } from "@/types";
 
 export default function AboutPage({
@@ -24,12 +25,13 @@ export default function AboutPage({
   onSignOut: () => void;
 }) {
   const [sourceLang, setSourceLang] = useState("English");
-  const [targetLang, setTargetLang] = useState("Spanish");
+  const [targetLang, setTargetLang] = useState("Khmer");
   const [sourceText, setSourceText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [isTranslating, setIsTranslating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [charCount, setCharCount] = useState(0);
+  const { ref: whyRef, inView: whyInView } = useInView<HTMLDivElement>();
 
   const handleSourceChange = (text: string) => {
     if (text.length <= 5000) {
@@ -53,16 +55,7 @@ export default function AboutPage({
     setIsTranslating(true);
     setTimeout(() => {
       const samples: Record<string, string> = {
-        Spanish: "Hola, bienvenido al mundo de las posibilidades infinitas. La traducción conecta culturas y abre puertas a nuevas perspectivas.",
-        French: "Bonjour, bienvenue dans le monde des possibilités infinies. La traduction connecte les cultures et ouvre des portes à de nouvelles perspectives.",
-        German: "Hallo, willkommen in der Welt der unendlichen Möglichkeiten. Übersetzung verbindet Kulturen und öffnet Türen zu neuen Perspektiven.",
-        Italian: "Ciao, benvenuto nel mondo delle possibilità infinite. La traduzione connette le culture e apre porte a nuove prospettive.",
-        Japanese: "こんにちは、無限の可能性の世界へようこそ。翻訳は文化をつなぎ、新しい視点への扉を開きます。",
-        Chinese: "你好，欢迎来到无限可能的世界。翻译连接文化，为新视角打开大门。",
-        Portuguese: "Olá, bem-vindo ao mundo das possibilidades infinitas. A tradução conecta culturas e abre portas para novas perspectivas.",
-        Arabic: "مرحباً، مرحباً بك في عالم الإمكانيات اللانهائية. الترجمة تربط الثقافات وتفتح أبواباً لآفاق جديدة.",
-        Korean: "안녕하세요, 무한한 가능성의 세계에 오신 것을 환영합니다. 번역은 문화를 연결하고 새로운 관점으로 가는 문을 엽니다.",
-        Russian: "Здравствуйте, добро пожаловать в мир бесконечных возможностей. Перевод соединяет культуры и открывает двери к новым перспективам.",
+        Khmer: "សួស្តី សូមស្វាគមន៍មកកាន់ពិភពនៃលទ្ធភាពគ្មានដែនកំណត់។ ការបកប្រែភ្ជាប់វប្បធម៌ និងបើកទ្វារទៅរកទស្សនវិស័យថ្មីៗ។",
       };
       setTranslatedText(samples[targetLang] || `[${targetLang} translation of your text would appear here. Connect to a translation API to enable live translations.]`);
       setIsTranslating(false);
@@ -81,21 +74,44 @@ export default function AboutPage({
       <Navbar user={user} onLive={onLive} onSignIn={onSignIn} onSignUp={onSignUp} onHistory={onHistory} onSignOut={onSignOut} />
 
       <section className="relative px-8 md:px-16 pt-14 pb-4 overflow-hidden">
+        <style>{`
+          @keyframes heroFadeUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[220px_1fr_220px] items-end gap-0">
           <div className="hidden md:block h-[340px] -mb-4"><BotanicalLeft /></div>
           <div className="text-center py-4">
-            <p className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-4">
-              92 languages · Neural translation
+            <p
+              className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-4"
+              style={{ animation: "heroFadeUp 0.6s ease-out both" }}
+            >
+              English · Khmer · Neural translation
             </p>
             <h1 className="font-['Playfair_Display'] font-black text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-foreground mb-5">
-              Translate the<br />
-              <em className="italic text-accent">World,</em> One<br />
-              Word at a Time
+              <span className="block overflow-hidden">
+                <span className="block" style={{ animation: "heroFadeUp 0.7s ease-out 0.1s both" }}>Translate the</span>
+              </span>
+              <span className="block overflow-hidden">
+                <span className="block" style={{ animation: "heroFadeUp 0.7s ease-out 0.25s both" }}>
+                  <em className="italic text-accent">World,</em> One
+                </span>
+              </span>
+              <span className="block overflow-hidden">
+                <span className="block" style={{ animation: "heroFadeUp 0.7s ease-out 0.4s both" }}>Word at a Time</span>
+              </span>
             </h1>
-            <p className="text-muted-foreground text-base md:text-lg max-w-md mx-auto leading-relaxed">
+            <p
+              className="text-muted-foreground text-base md:text-lg max-w-md mx-auto leading-relaxed"
+              style={{ animation: "heroFadeUp 0.6s ease-out 0.55s both" }}
+            >
               Elegant, accurate, and instant translations powered by neural AI — crafted for writers, travelers, and explorers.
             </p>
-            <div className="flex items-center justify-center gap-3 mt-7">
+            <div
+              className="flex items-center justify-center gap-3 mt-7"
+              style={{ animation: "heroFadeUp 0.6s ease-out 0.7s both" }}
+            >
               <button onClick={onLive} className="bg-primary text-primary-foreground px-7 py-3 rounded-full text-sm font-semibold hover:bg-accent transition-colors duration-200 flex items-center gap-2">
                 <Mic size={14} />
                 Start translating
@@ -115,11 +131,6 @@ export default function AboutPage({
             <div className="grid grid-cols-[1fr_auto_1fr] items-stretch border-b border-border">
               <div className="flex items-center gap-4 px-6 py-3.5 border-r border-border">
                 <LanguageSelect value={sourceLang} onChange={setSourceLang} />
-                <div className="flex gap-1.5 ml-2">
-                  {["EN", "ES", "FR", "DE"].map((code) => (
-                    <button key={code} className="text-xs font-['DM_Mono'] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded hover:bg-muted transition-colors">{code}</button>
-                  ))}
-                </div>
               </div>
               <div className="flex items-center justify-center px-4">
                 <button onClick={handleSwap} className="w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:scale-110 transition-transform duration-200">
@@ -128,11 +139,6 @@ export default function AboutPage({
               </div>
               <div className="flex items-center gap-4 px-6 py-3.5 border-l border-border">
                 <LanguageSelect value={targetLang} onChange={setTargetLang} />
-                <div className="flex gap-1.5 ml-2">
-                  {["ZH", "JA", "KO", "AR"].map((code) => (
-                    <button key={code} className="text-xs font-['DM_Mono'] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded hover:bg-muted transition-colors">{code}</button>
-                  ))}
-                </div>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 min-h-[260px]">
@@ -184,18 +190,35 @@ export default function AboutPage({
       </section>
 
       <section className="px-8 md:px-16 pb-20 bg-secondary/40 border-t border-border">
-        <div className="max-w-5xl mx-auto pt-16">
-          <p className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-3 text-center">Why Lingua</p>
-          <h2 className="font-['Playfair_Display'] font-bold text-3xl md:text-4xl text-center mb-14 tracking-tight">
+        <div ref={whyRef} className="max-w-5xl mx-auto pt-16">
+          <p
+            className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-3 text-center transition-all duration-700 ease-out"
+            style={{ opacity: whyInView ? 1 : 0, transform: whyInView ? "translateY(0)" : "translateY(20px)" }}
+          >
+            Why Fluent
+          </p>
+          <h2
+            className="font-['Playfair_Display'] font-bold text-3xl md:text-4xl text-center mb-14 tracking-tight transition-all duration-700 ease-out"
+            style={{ opacity: whyInView ? 1 : 0, transform: whyInView ? "translateY(0)" : "translateY(20px)", transitionDelay: whyInView ? "80ms" : "0ms" }}
+          >
             Translation that feels <em className="italic">human</em>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { icon: Sparkles, color: "bg-[#5C8A5A]", title: "Neural Accuracy", desc: "Context-aware AI that understands idioms, tone, and cultural nuance — not just words." },
               { icon: Zap, color: "bg-accent", title: "Instant Results", desc: "Sub-second translations for up to 5,000 characters, powered by our low-latency inference pipeline." },
-              { icon: BookOpen, color: "bg-[#3C6AB5]", title: "92 Languages", desc: "From Swahili to Swedish, Tagalog to Turkish — we cover languages spoken by 7 billion people." },
-            ].map(({ icon: Icon, color, title, desc }) => (
-              <div key={title} className="bg-card rounded-2xl border border-border p-6 hover:shadow-md transition-shadow duration-200">
+              { icon: BookOpen, color: "bg-[#3C6AB5]", title: "Khmer ↔ English", desc: "Purpose-built for Khmer and English, capturing tone, idiom, and cultural nuance that generic translators miss." },
+            ].map(({ icon: Icon, color, title, desc }, i) => (
+              <div
+                key={title}
+                className="bg-card rounded-2xl border border-border p-6 hover:shadow-md"
+                style={{
+                  opacity: whyInView ? 1 : 0,
+                  transform: whyInView ? "translateY(0)" : "translateY(28px)",
+                  transition: "opacity 0.6s ease-out, transform 0.6s ease-out, box-shadow 0.2s ease-out",
+                  transitionDelay: whyInView ? `${180 + i * 130}ms` : "0ms",
+                }}
+              >
                 <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center mb-4`}>
                   <Icon size={18} className="text-white" />
                 </div>

@@ -48,7 +48,7 @@ export default function App() {
     return (
       <LiveTranslatePage
         sourceLang="English"
-        targetLang="Spanish"
+        targetLang="Khmer"
         user={user}
         onGoAbout={() => setPage("about")}
         onGoSignIn={(conv) => {

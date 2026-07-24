@@ -1,10 +1,6 @@
 import { ConversationEntry } from "../../../types";
 
-export const LANGUAGES = [
-  "English", "Spanish", "French", "German", "Italian", "Portuguese",
-  "Japanese", "Chinese", "Korean", "Arabic", "Russian", "Dutch",
-  "Swedish", "Polish", "Turkish", "Hindi", "Vietnamese", "Thai",
-];
+export const LANGUAGES = ["English", "Khmer"];
 
 export const SEED_HISTORY: ConversationEntry[] = [
   {
@@ -44,11 +40,13 @@ export const DEMO_PHRASES = [
 ];
 
 export const DEMO_TRANSLATIONS: Record<string, string[]> = {
-  Spanish: ["¡Hola! ¿Cómo estás hoy?", "Me gustaría visitar tu hermoso país algún día.", "¿Puedes ayudarme a encontrar la estación de tren más cercana?", "El clima está absolutamente maravilloso esta mañana.", "Muchas gracias por tu amabilidad y hospitalidad."],
-  French: ["Bonjour, comment allez-vous aujourd'hui ?", "J'aimerais visiter votre beau pays un jour.", "Pouvez-vous m'aider à trouver la gare la plus proche ?", "Le temps est absolument magnifique ce matin.", "Merci beaucoup pour votre gentillesse et votre hospitalité."],
-  German: ["Hallo, wie geht es Ihnen heute?", "Ich würde Ihr schönes Land gerne eines Tages besuchen.", "Können Sie mir helfen, den nächsten Bahnhof zu finden?", "Das Wetter ist heute Morgen absolut wunderbar.", "Vielen Dank für Ihre Freundlichkeit und Gastfreundschaft."],
-  Japanese: ["こんにちは、今日のご気分はいかがですか？", "いつかあなたの美しい国を訪れたいです。", "最寄りの駅を見つけるのを手伝ってもらえますか？", "今朝の天気は本当に素晴らしいですね。", "ご親切とおもてなしに心から感謝します。"],
-  Chinese: ["你好，你今天怎么样？", "我希望有一天能去你们美丽的国家。", "你能帮我找到最近的火车站吗？", "今天早上的天气真是太好了。", "非常感谢您的善意和热情款待。"],
+  Khmer: [
+    "សួស្តី តើថ្ងៃនេះអ្នកសុខសប្បាយទេ?",
+    "ខ្ញុំចង់ទៅលេងប្រទេសដ៏ស្រស់ស្អាតរបស់អ្នកថ្ងៃណាមួយ។",
+    "តើអ្នកអាចជួយខ្ញុំរកស្ថានីយ៍រថភ្លើងដែលនៅជិតបំផុតបានទេ?",
+    "អាកាសធាតុព្រឹកនេះស្អាតណាស់។",
+    "សូមអរគុណយ៉ាងខ្លាំងចំពោះភាពសប្បុរស និងការទទួលភ្ញៀវរបស់អ្នក។",
+  ],
 };
 
 export const BAR_HEIGHTS = [14, 28, 20, 36, 16, 40, 22, 32, 18, 38, 24, 30, 12, 34, 26, 40, 18, 28, 36, 20, 32, 16, 38, 24, 14, 30, 22, 34];

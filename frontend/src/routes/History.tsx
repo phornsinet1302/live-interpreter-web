@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ArrowLeft, Globe, Search, History as HistoryIcon } from "lucide-react";
+import { ArrowLeft, Search, History as HistoryIcon } from "lucide-react";
 import { UserAccount, ConversationEntry } from "../types";
 import SessionCard from "@/components/ui/features/history/SessionCard";
 import BotanicalLeft from "@/components/ui/common/BotanicalLeft";
+import Logo from "@/components/ui/common/Logo";
 
 export default function HistoryPage({
   user,
@@ -48,10 +49,7 @@ export default function HistoryPage({
           <ArrowLeft size={15} />
           Back
         </button>
-        <div className="flex items-center gap-2">
-          <Globe size={20} className="text-accent" />
-          <span className="font-['Playfair_Display'] font-bold text-lg tracking-tight">Lingua</span>
-        </div>
+        <Logo size="text-lg" />
         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-['DM_Mono']">
           {user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
         </div>
