@@ -11,6 +11,10 @@
     "db:migrate": "pnpm --filter backend db:migrate",
     "db:seed": "pnpm --filter backend db:seed"
   },
+  "devDependencies": {
+    "@prisma/client": "^6",
+    "prisma": "6.19.3"
+  },
   "engines": {
     "node": ">=20"
   }
