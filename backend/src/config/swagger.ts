@@ -19,9 +19,11 @@ const options: swaggerJsdoc.Options = {
     },
   },
   // Files scanned for `@openapi` JSDoc blocks. Every module route file is included.
+  // The glob matcher needs forward slashes even on Windows — path.join()
+  // would produce backslashes here and silently match zero files.
   apis: [
-    path.join(__dirname, "..", "modules", "**", "*.route.ts"),
-    path.join(__dirname, "..", "modules", "**", "*.route.js"),
+    path.join(__dirname, "..", "modules", "**", "*.route.ts").split(path.sep).join("/"),
+    path.join(__dirname, "..", "modules", "**", "*.route.js").split(path.sep).join("/"),
   ],
 };
 
