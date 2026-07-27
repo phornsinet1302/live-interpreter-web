@@ -24,10 +24,6 @@ export default function PlatformSection() {
     hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, y: y * half },
     visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0.25 : 0.6 * half, delay: reduceMotion ? 0 : delay, ease: EASE } },
   });
-  const headerOrchestrator: Variants = {
-    hidden: {},
-    visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.12 * half } },
-  };
   const iconVariant: Variants = {
     hidden: reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.8, rotate: -8 },
     visible: { opacity: 1, scale: 1, rotate: 0, transition: { duration: reduceMotion ? 0.2 : 0.5, ease: EASE } },
@@ -44,6 +40,8 @@ export default function PlatformSection() {
   const mockupAnimate = { opacity: 1, y: 0, scale: 1 };
   const mockupTransition = { duration: reduceMotion ? 0.25 : 0.5, delay: reduceMotion ? 0 : 0.15, ease: EASE };
 
+  const [titleLocked, setTitleLocked] = useState(false);
+
   return (
     <section className="relative overflow-hidden px-8 md:px-16 py-24 bg-background border-t border-border">
       <div
@@ -56,30 +54,36 @@ export default function PlatformSection() {
         }}
       />
       <div className="relative max-w-5xl mx-auto">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.25 }}
-          variants={headerOrchestrator}
-          className="text-center mb-14"
-        >
-          <motion.p variants={fadeItem(12)} className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-3">
-            Available everywhere
-          </motion.p>
-          <motion.h2 variants={fadeItem(20)} className="font-['Playfair_Display'] font-black text-4xl md:text-5xl leading-tight tracking-tight">
-            Fluent on every<br />
-            <motion.span
-              className="text-shimmer-once italic"
-              animate={reduceMotion ? undefined : { scale: [1, 1.05, 1] }}
-              transition={reduceMotion ? undefined : { duration: 0.6, delay: 0.9, ease: EASE }}
-            >
-              platform
-            </motion.span>
-          </motion.h2>
-          <motion.p variants={fadeItem(12)} className="text-muted-foreground text-sm md:text-base mt-4 max-w-md mx-auto leading-relaxed">
-            One account, three surfaces. Translate on the web, carry it in your pocket, or keep it a keystroke away.
-          </motion.p>
-        </motion.div>
+        <div style={{ perspective: reduceMotion ? undefined : 1000 }} className="mb-14">
+          <motion.div
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0.4, rotateX: 15, scale: 1 }}
+            whileInView={reduceMotion ? { opacity: 1 } : { opacity: 1, rotateX: 0, scale: 1.05 }}
+            viewport={{ once: false, amount: 0.3 }}
+            transition={{ duration: reduceMotion ? 0.3 : 0.9, ease: EASE }}
+            onViewportEnter={() => !reduceMotion && setTitleLocked(true)}
+            onViewportLeave={() => setTitleLocked(false)}
+            style={{ transformStyle: "preserve-3d" }}
+            className="text-center"
+          >
+            <p className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-3">
+              Available everywhere
+            </p>
+            <h2 className="font-['Playfair_Display'] font-black text-4xl md:text-5xl leading-tight tracking-tight">
+              <span className={`title-shimmer-sweep ${titleLocked ? "is-active" : ""}`}>Fluent on every</span>
+              <br />
+              <motion.span
+                className="text-shimmer-once italic"
+                animate={titleLocked && !reduceMotion ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+                transition={{ duration: 0.6, delay: reduceMotion ? 0 : 0.5, ease: EASE }}
+              >
+                platform
+              </motion.span>
+            </h2>
+            <p className="text-muted-foreground text-sm md:text-base mt-4 max-w-md mx-auto leading-relaxed">
+              One account, three surfaces. Translate on the web, carry it in your pocket, or keep it a keystroke away.
+            </p>
+          </motion.div>
+        </div>
 
         <motion.div
           initial="hidden"

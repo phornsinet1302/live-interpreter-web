@@ -7,20 +7,6 @@ import { UserAccount } from "@/types";
 import { useMotionPrefs } from "@/hooks/useMotionPrefs";
 import { fadeUp } from "@/lib/motion";
 
-const navLinks = ["Features", "Languages", "API", "Pricing"];
-
-function NavLink({ label }: { label: string }) {
-  return (
-    <a
-      href="#"
-      className="relative group py-1 text-sm outline-none transition-colors duration-[250ms] hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-accent/50 rounded-sm"
-    >
-      {label}
-      <span className="pointer-events-none absolute left-0 -bottom-0.5 h-px w-full origin-center scale-x-0 bg-foreground transition-transform duration-[250ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100 group-focus-visible:scale-x-100" />
-    </a>
-  );
-}
-
 export default function Navbar({
   user,
   onLive,
@@ -59,11 +45,6 @@ export default function Navbar({
       >
         <Logo size="text-xl" />
       </button>
-      <div className="hidden md:flex items-center gap-8 text-muted-foreground">
-        {navLinks.map((label) => (
-          <NavLink key={label} label={label} />
-        ))}
-      </div>
       <div className="flex items-center gap-3">
         {user ? (
           <UserNav user={user} onHistory={onHistory} onSignOut={onSignOut} />
