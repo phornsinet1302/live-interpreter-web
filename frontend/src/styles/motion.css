@@ -1,0 +1,32 @@
+/* Shared decorative motion utilities used across marketing sections. */
+
+@keyframes bgDrift {
+  0%, 100% { background-position: 20% 30%; }
+  50% { background-position: 80% 70%; }
+}
+.animate-bg-drift { animation: bgDrift 26s ease-in-out infinite; }
+.animate-bg-drift-cards { animation: bgDrift 20s ease-in-out infinite; }
+
+.text-shimmer, .text-shimmer-once {
+  background-image: linear-gradient(90deg, #A8442A 0%, #C85A3A 25%, #E08A6B 50%, #C85A3A 75%, #A8442A 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-shimmer { animation: textShimmer 4s ease-in-out infinite; }
+.text-shimmer-once { animation: textShimmerOnce 1.1s ease-in-out 0.9s 1 both; }
+@keyframes textShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes textShimmerOnce {
+  from { background-position: 0% 50%; }
+  to { background-position: 160% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-bg-drift, .animate-bg-drift-cards, .text-shimmer, .text-shimmer-once {
+    animation: none !important;
+  }
+}

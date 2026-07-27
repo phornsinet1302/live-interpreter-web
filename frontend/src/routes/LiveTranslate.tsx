@@ -123,7 +123,7 @@ export default function LiveTranslatePage({
 
       <div className="relative z-10 flex items-center justify-between px-8 py-5 border-b border-border/40">
         <button onClick={onGoAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 font-['DM_Sans']">
-          About
+          Back
         </button>
         <Logo size="text-lg" />
         <div className="flex items-center gap-3">
