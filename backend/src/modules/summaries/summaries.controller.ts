@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
 import * as service from "./summaries.service";
 import { param } from "../../utils/request";
+import type { QuickSummaryInput } from "./summaries.validator";
+
+export async function quickSummary(req: Request, res: Response) {
+  const result = await service.quickSummarize(req.body as QuickSummaryInput);
+  res.json(result);
+}
 
 export async function create(req: Request, res: Response) {
   const summary = await service.createOrRegenerateSummary(param(req, "id"), req.user!.id);

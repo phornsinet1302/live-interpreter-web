@@ -10,7 +10,7 @@ import { authRouter } from "./modules/auth/auth.route";
 import { usersRouter } from "./modules/users/users.route";
 import { conversationsRouter } from "./modules/conversations/conversations.route";
 import { quickTranslateRouter, translationsRouter } from "./modules/translations/translations.route";
-import { summariesRouter } from "./modules/summaries/summaries.route";
+import { quickSummaryRouter, summariesRouter } from "./modules/summaries/summaries.route";
 import { speakersRouter } from "./modules/speakers/speakers.route";
 import { suggestionsRouter } from "./modules/suggestions/suggestions.route";
 import { subtitlesRouter } from "./modules/subtitles/subtitles.route";
@@ -54,6 +54,7 @@ export function createApp() {
   v1.use("/users", usersRouter); //                    /api/v1/users/*
   v1.use("/conversations", conversationsRouter); //    /api/v1/conversations*
   v1.use("/translate", quickTranslateRouter); //        /api/v1/translate (public)
+  v1.use("/summarize", quickSummaryRouter); //           /api/v1/summarize (public)
   v1.use("/conversations/:id/messages", translationsRouter);
   v1.use("/conversations/:id/summary", summariesRouter);
   v1.use("/conversations/:id/speakers", speakersRouter);

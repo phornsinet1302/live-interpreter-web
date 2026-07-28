@@ -1,14 +1,59 @@
 import * as repo from "./summaries.repository";
 import { getConversationForOwner } from "../conversations/conversations.service";
 import { openai } from "../../lib/openai";
+import { gemini } from "../../lib/gemini";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
+import type { QuickSummaryInput } from "./summaries.validator";
 
 interface GeneratedSummary {
   summary: string;
   keyPoints: string[];
   actionItems: { text: string }[];
   keywords: string[];
+}
+
+export interface QuickSummaryResult {
+  summary: string[];
+  nextSteps: string[];
+}
+
+// Unauthenticated counterpart to createOrRegenerateSummary — takes the
+// transcript directly instead of loading it from a persisted conversation,
+// and uses Gemini (like quick-translate) rather than OpenAI so it works
+// under the same ADC auth with no API key required.
+export async function quickSummarize({
+  exchanges,
+  sourceLanguage,
+  targetLanguage,
+}: QuickSummaryInput): Promise<QuickSummaryResult> {
+  const transcript = exchanges
+    .map((e) => `${sourceLanguage}: ${e.source}\n${targetLanguage}: ${e.translated}`)
+    .join("\n\n");
+
+  try {
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: transcript,
+      config: {
+        systemInstruction:
+          `You are summarizing a translated conversation between ${sourceLanguage} and ${targetLanguage} speakers. ` +
+          `Write your response in ${targetLanguage}. ` +
+          "Produce a short summary of what was discussed as 2-5 bullet points, and 2-4 concrete, actionable next steps " +
+          "the participants should take based on what was said (skip generic advice — base them on the actual content). " +
+          'Respond ONLY with JSON of the shape {"summary": string[], "nextSteps": string[]}.',
+        responseMimeType: "application/json",
+      },
+    });
+
+    const raw = response.text;
+    if (!raw) throw new Error("Empty completion");
+    const parsed = JSON.parse(raw) as { summary?: string[]; nextSteps?: string[] };
+    return { summary: parsed.summary ?? [], nextSteps: parsed.nextSteps ?? [] };
+  } catch (error) {
+    logger.error("Quick summary generation failed", error);
+    throw new ApiError(502, "Summary generation is currently unavailable", "SUMMARY_FAILED");
+  }
 }
 
 async function generate(conversationId: string): Promise<GeneratedSummary> {

@@ -31,3 +31,14 @@ export const quickTranslateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Applied to the unauthenticated quick-summarize endpoint. Unlike
+// quick-translate, this fires once per finished conversation, not once per
+// sentence, so a much lower cap is plenty — kept as a 15-minute window
+// since there's no mid-conversation retry loop depending on fast recovery.
+export const quickSummaryLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+});

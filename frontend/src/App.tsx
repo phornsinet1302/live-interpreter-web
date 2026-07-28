@@ -19,6 +19,8 @@ export default function App() {
     targetLang: string;
     sourceText: string;
     translatedText: string;
+    summary?: string[];
+    nextSteps?: string[];
   } | null>(null);
 
   const handleLogin = (loggedInUser: { name: string; email: string }) => {
@@ -32,8 +34,12 @@ export default function App() {
         title: "Live Translation Session",
         duration: "< 1 min",
         exchanges: [{ source: pendingConversation.sourceText, translated: pendingConversation.translatedText }],
-        summary: [`Translated from ${pendingConversation.sourceLang} to ${pendingConversation.targetLang}.`, "Session captured from live voice translation."],
-        nextSteps: ["Review the translated content.", "Share or export if needed."],
+        summary: pendingConversation.summary?.length
+          ? pendingConversation.summary
+          : [`Translated from ${pendingConversation.sourceLang} to ${pendingConversation.targetLang}.`, "Session captured from live voice translation."],
+        nextSteps: pendingConversation.nextSteps?.length
+          ? pendingConversation.nextSteps
+          : ["Review the translated content.", "Share or export if needed."],
       };
       addConversation(entry);
       setPendingConversation(null);
