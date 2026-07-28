@@ -10,6 +10,7 @@ import Logo from "@/components/ui/common/Logo";
 import ExitModal from "@/components/ui/features/translation/ExitModal";
 import AudioVisualizer from "@/components/ui/features/translation/AudioVisualizer";
 import UserNav from "@/components/ui/layout/UserNav";
+import LanguageSelect from "@/components/ui/features/translation/LanguageSelect";
 
 interface TranscriptEntry {
   id: number;
@@ -128,6 +129,18 @@ export default function LiveTranslatePage({
     setStatus("idle");
   };
 
+  // Changing either language mid-session invalidates whatever's already on
+  // screen (it was recognized/translated for the old pair), so this clears
+  // the transcript the same way swapLanguages does.
+  const changeLanguage = (which: "source" | "target", lang: string) => {
+    if (which === "source") setSourceLang(lang);
+    else setTargetLang(lang);
+    setEntries([]);
+    setInterimText("");
+    setErrorMsg(null);
+    setStatus("idle");
+  };
+
   useEffect(() => {
     return () => stop();
   }, [stop]);
@@ -208,7 +221,7 @@ export default function LiveTranslatePage({
       <div className="relative z-10 flex items-center justify-center gap-4 pt-8 pb-2">
         <div className="text-center">
           <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Speaking</p>
-          <p className="font-['Playfair_Display'] font-bold text-base text-foreground">{sourceLang}</p>
+          <LanguageSelect value={sourceLang} onChange={(lang) => changeLanguage("source", lang)} disabled={listening} />
         </div>
         <button
           onClick={swapLanguages}
@@ -222,7 +235,7 @@ export default function LiveTranslatePage({
         </button>
         <div className="text-center">
           <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Translating to</p>
-          <p className="font-['Playfair_Display'] font-bold text-base text-accent">{targetLang}</p>
+          <LanguageSelect value={targetLang} onChange={(lang) => changeLanguage("target", lang)} disabled={listening} />
         </div>
       </div>
 

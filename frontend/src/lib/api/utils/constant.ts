@@ -1,11 +1,41 @@
 import { ConversationEntry } from "../../../types";
 
-export const LANGUAGES = ["English", "Khmer"];
+export const LANGUAGES = [
+  "English",
+  "Khmer",
+  "Japanese",
+  "Chinese",
+  "Korean",
+  "Vietnamese",
+  "French",
+  "Spanish",
+  "German",
+  "Portuguese",
+  "Russian",
+  "Arabic",
+  "Hindi",
+  "Indonesian",
+];
 
-// BCP-47 codes for the Web Speech API's SpeechRecognition.lang.
+// BCP-47 codes for the Web Speech API's SpeechRecognition.lang — this is
+// what's speaking into the mic, so it only needs to cover source languages,
+// but we keep it complete for every entry in LANGUAGES since either side
+// can be picked as the "speaking" language via the swap button.
 export const LANGUAGE_SPEECH_CODES: Record<string, string> = {
   English: "en-US",
   Khmer: "km-KH",
+  Japanese: "ja-JP",
+  Chinese: "zh-CN",
+  Korean: "ko-KR",
+  Vietnamese: "vi-VN",
+  French: "fr-FR",
+  Spanish: "es-ES",
+  German: "de-DE",
+  Portuguese: "pt-BR",
+  Russian: "ru-RU",
+  Arabic: "ar-SA",
+  Hindi: "hi-IN",
+  Indonesian: "id-ID",
 };
 
 export const SEED_HISTORY: ConversationEntry[] = [
