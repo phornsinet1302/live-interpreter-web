@@ -1,7 +1,7 @@
 // Service -> business rules & orchestration. No req/res.
 import * as repo from "./translations.repository";
 import { getConversationForOwner } from "../conversations/conversations.service";
-import { openai } from "../../lib/openai";
+import { gemini } from "../../lib/gemini";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
 import { toSkipTake, paginated, type PaginationQuery } from "../../utils/pagination";
@@ -9,7 +9,8 @@ import { getIO } from "../../websocket/socket";
 import { conversationRoom, SOCKET_EVENTS } from "../../websocket/events";
 import type { CreateMessageInput, TranslateResult } from "./translations.types";
 
-const TRANSLATION_PROVIDER = "openai";
+const TRANSLATION_PROVIDER = "vertex-gemini";
+const TRANSLATION_MODEL = "gemini-2.5-flash";
 
 export async function translateText(
   text: string,
@@ -17,24 +18,18 @@ export async function translateText(
   targetLanguage: string
 ): Promise<TranslateResult> {
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a professional interpreter. Translate the user's message from the source language to the target language. " +
-            'Respond ONLY with JSON of the shape {"translatedText": string, "confidence": number between 0 and 1}.',
-        },
-        {
-          role: "user",
-          content: `Source language: ${sourceLanguage}\nTarget language: ${targetLanguage}\nText: ${text}`,
-        },
-      ],
+    const response = await gemini.models.generateContent({
+      model: TRANSLATION_MODEL,
+      contents: `Source language: ${sourceLanguage}\nTarget language: ${targetLanguage}\nText: ${text}`,
+      config: {
+        systemInstruction:
+          "You are a professional interpreter. Translate the user's message from the source language to the target language. " +
+          'Respond ONLY with JSON of the shape {"translatedText": string, "confidence": number between 0 and 1}.',
+        responseMimeType: "application/json",
+      },
     });
 
-    const raw = completion.choices[0]?.message?.content;
+    const raw = response.text;
     if (!raw) throw new Error("Empty completion");
     const parsed = JSON.parse(raw) as { translatedText?: string; confidence?: number };
     if (!parsed.translatedText) throw new Error("Missing translatedText in completion");

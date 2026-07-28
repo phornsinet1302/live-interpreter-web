@@ -3,12 +3,14 @@ packages:
   - "backend"
 
 allowBuilds:
+  '@google/genai': true
   "@prisma/client": true
   "@prisma/engines": true
   "@scarf/scarf": false
   "@tailwindcss/oxide": true
   esbuild: true
   prisma: true
+  protobufjs: true
 
 onlyBuiltDependencies:
   - "@prisma/client"

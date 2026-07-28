@@ -2,6 +2,12 @@ import { ConversationEntry } from "../../../types";
 
 export const LANGUAGES = ["English", "Khmer"];
 
+// BCP-47 codes for the Web Speech API's SpeechRecognition.lang.
+export const LANGUAGE_SPEECH_CODES: Record<string, string> = {
+  English: "en-US",
+  Khmer: "km-KH",
+};
+
 export const SEED_HISTORY: ConversationEntry[] = [
   {
     id: "1", date: "2026-06-28T14:32:00Z",
@@ -30,24 +36,6 @@ export const SEED_HISTORY: ConversationEntry[] = [
   // ... include all other seeded conversations from original SEED_HISTORY
   // (truncated for brevity; you can copy the full array)
 ];
-
-export const DEMO_PHRASES = [
-  "Hello, how are you doing today?",
-  "I would like to visit your beautiful country someday.",
-  "Can you help me find the nearest train station?",
-  "The weather is absolutely wonderful this morning.",
-  "Thank you so much for your kindness and hospitality.",
-];
-
-export const DEMO_TRANSLATIONS: Record<string, string[]> = {
-  Khmer: [
-    "សួស្តី តើថ្ងៃនេះអ្នកសុខសប្បាយទេ?",
-    "ខ្ញុំចង់ទៅលេងប្រទេសដ៏ស្រស់ស្អាតរបស់អ្នកថ្ងៃណាមួយ។",
-    "តើអ្នកអាចជួយខ្ញុំរកស្ថានីយ៍រថភ្លើងដែលនៅជិតបំផុតបានទេ?",
-    "អាកាសធាតុព្រឹកនេះស្អាតណាស់។",
-    "សូមអរគុណយ៉ាងខ្លាំងចំពោះភាពសប្បុរស និងការទទួលភ្ញៀវរបស់អ្នក។",
-  ],
-};
 
 export const BAR_HEIGHTS = [14, 28, 20, 36, 16, 40, 22, 32, 18, 38, 24, 30, 12, 34, 26, 40, 18, 28, 36, 20, 32, 16, 38, 24, 14, 30, 22, 34];
 export const BAR_DURATIONS = [0.55, 0.7, 0.62, 0.8, 0.58, 0.9, 0.65, 0.75, 0.6, 0.85, 0.68, 0.72, 0.52, 0.78, 0.64, 0.88, 0.6, 0.7, 0.82, 0.63, 0.74, 0.57, 0.87, 0.66, 0.53, 0.76, 0.61, 0.8];

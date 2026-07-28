@@ -32,6 +32,12 @@ export const env = {
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   openaiApiKey: process.env.OPENAI_API_KEY,
 
+  // Vertex AI (Gemini) — auth is via ADC, not an API key, per org policy.
+  gcp: {
+    projectId: process.env.GCP_PROJECT_ID,
+    location: process.env.GCP_LOCATION ?? "us-central1",
+  },
+
   // Gmail SMTP via nodemailer. GMAIL_APP_PASSWORD is a 16-character Google
   // "App Password" (requires 2-Step Verification on the account), not the
   // account's real password.

@@ -13,3 +13,13 @@ export const listMessagesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
 });
 export type ListMessagesQuery = z.infer<typeof listMessagesQuerySchema>;
+
+// Unauthenticated, not tied to a conversation — used by the pre-signup
+// live-translate demo, so text is capped well below a real spoken sentence
+// to keep the cost of abuse low.
+export const quickTranslateSchema = z.object({
+  text: z.string().min(1).max(1000),
+  sourceLanguage: z.string().min(2).max(30),
+  targetLanguage: z.string().min(2).max(30),
+});
+export type QuickTranslateInput = z.infer<typeof quickTranslateSchema>;
