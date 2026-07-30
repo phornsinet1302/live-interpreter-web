@@ -28,6 +28,7 @@ export default function LiveTranslatePage({
   onGoSignIn,
   onGoSignUp,
   onGoHistory,
+  onGoProfile,
   onSignOut,
 }: {
   sourceLang: string;
@@ -44,6 +45,7 @@ export default function LiveTranslatePage({
   }) => void;
   onGoSignUp: () => void;
   onGoHistory: () => void;
+  onGoProfile: () => void;
   onSignOut: () => void;
 }) {
   const [sourceLang, setSourceLang] = useState(initialSourceLang);
@@ -223,7 +225,7 @@ export default function LiveTranslatePage({
   const hasContent = entries.length > 0;
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col font-['DM_Sans'] z-50 overflow-hidden">
+    <div className="fixed inset-0 bg-background flex flex-col font-['DM_Sans'] z-50 ">
       <style>{`
         @keyframes barPulse {
           0%   { transform: scaleY(0.12); }
@@ -260,7 +262,7 @@ export default function LiveTranslatePage({
             {isFullscreen ? <Minimize2 size={17} /> : <Maximize2 size={17} />}
           </button>
           {user ? (
-            <UserNav user={user} onHistory={onGoHistory} onSignOut={onSignOut} />
+            <UserNav user={user} onHistory={onGoHistory} onProfile={onGoProfile} onSignOut={onSignOut} />
           ) : (
             <>
               <button
@@ -304,7 +306,7 @@ export default function LiveTranslatePage({
         </div>
       </div>
 
-      <div className="relative z-10 flex-1 min-h-0 flex flex-col md:flex-row gap-2 md:gap-8 px-8 md:px-12 lg:px-20">
+      <div className="relative z-10 flex-1 min-h-0 flex flex-col md:flex-row gap-2 md:gap-8 px-8 md:px-12 lg:px-20 overflow-hidden">
         <div className="flex-1 min-h-0 flex flex-col">
           {!hasContent && !interimText ? (
             <div className="flex-1 flex items-center justify-center">

@@ -13,6 +13,7 @@ export default function Navbar({
   onSignIn,
   onSignUp,
   onHistory,
+  onProfile,
   onSignOut,
 }: {
   user: UserAccount | null;
@@ -20,6 +21,7 @@ export default function Navbar({
   onSignIn: () => void;
   onSignUp: () => void;
   onHistory: () => void;
+  onProfile: () => void;
   onSignOut: () => void;
 }) {
   const { reduceMotion, isMobile } = useMotionPrefs();
@@ -47,7 +49,7 @@ export default function Navbar({
       </button>
       <div className="flex items-center gap-3">
         {user ? (
-          <UserNav user={user} onHistory={onHistory} onSignOut={onSignOut} />
+          <UserNav user={user} onHistory={onHistory} onProfile={onProfile} onSignOut={onSignOut} />
         ) : (
           <>
             <button
