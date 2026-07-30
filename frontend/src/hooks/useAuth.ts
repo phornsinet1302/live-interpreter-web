@@ -4,5 +4,6 @@ export function useAuth() {
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
   const logout = useAuthStore((state) => state.logout);
-  return { user, login, logout };
+  const updateUser = useAuthStore((state) => state.updateUser);
+  return { user, login, logout, updateUser };
 }

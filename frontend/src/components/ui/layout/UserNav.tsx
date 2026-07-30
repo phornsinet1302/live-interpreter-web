@@ -5,10 +5,12 @@ import { UserAccount } from "@/types";
 export default function UserNav({
   user,
   onHistory,
+  onProfile,
   onSignOut,
 }: {
   user: UserAccount;
   onHistory: () => void;
+  onProfile: () => void;
   onSignOut: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -51,7 +53,7 @@ export default function UserNav({
               <History size={15} className="text-muted-foreground" />
               Translation history
             </button>
-            <button onClick={() => { setOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-['DM_Sans'] text-foreground hover:bg-secondary/60 transition-colors text-left">
+            <button onClick={() => { setOpen(false); onProfile(); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-['DM_Sans'] text-foreground hover:bg-secondary/60 transition-colors text-left">
               <User size={15} className="text-muted-foreground" />
               Account settings
             </button>

@@ -21,6 +21,7 @@ export default function AboutPage({
   onSignIn,
   onSignUp,
   onHistory,
+  onProfile,
   onSignOut,
 }: {
   user: UserAccount | null;
@@ -28,6 +29,7 @@ export default function AboutPage({
   onSignIn: () => void;
   onSignUp: () => void;
   onHistory: () => void;
+  onProfile: () => void;
   onSignOut: () => void;
 }) {
   const [sourceLang, setSourceLang] = useState("English");
@@ -171,7 +173,7 @@ export default function AboutPage({
         }
       `}</style>
 
-      <Navbar user={user} onLive={onLive} onSignIn={onSignIn} onSignUp={onSignUp} onHistory={onHistory} onSignOut={onSignOut} />
+      <Navbar user={user} onLive={onLive} onSignIn={onSignIn} onSignUp={onSignUp} onHistory={onHistory} onProfile={onProfile} onSignOut={onSignOut} />
 
       <section
         ref={heroRef}

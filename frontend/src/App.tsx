@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useConversationStore } from "./store";
-import {useAuth} from "./hooks/useAuth";
+import { useAuth } from "./hooks/useAuth";
 import LiveTranslatePage from "./routes/LiveTranslate";
 import AboutPage from "./routes/About";
 import SignInPage from "./routes/SignIn";
 import SignUpPage from "./routes/SignUp";
 import HistoryPage from "./routes/History";
+import ProfilePage from "./routes/Profile"; // <-- imported
 import { useMotionPrefs } from "./hooks/useMotionPrefs";
 
 export default function App() {
-  const [page, setPage] = useState<"live" | "about" | "signin" | "signup" | "history">("about");
-  const { user, login, logout } = useAuth();
+  const [page, setPage] = useState<"live" | "about" | "signin" | "signup" | "history" | "profile">("about");
+  const { user, login, logout, updateUser } = useAuth(); // <-- added updateUser
   const { conversations, addConversation, deleteConversation } = useConversationStore();
   const { reduceMotion } = useMotionPrefs();
   const [pendingConversation, setPendingConversation] = useState<{
@@ -52,7 +53,6 @@ export default function App() {
     setPage("about");
   };
 
-  // Page routing
   const renderPage = () => {
     if (page === "live") {
       return (
@@ -67,6 +67,7 @@ export default function App() {
           }}
           onGoSignUp={() => setPage("signup")}
           onGoHistory={() => setPage("history")}
+          onGoProfile={() => setPage("profile")} // <-- pass down to LiveTranslate?
           onSignOut={handleSignOut}
         />
       );
@@ -103,6 +104,17 @@ export default function App() {
       );
     }
 
+    if (page === "profile" && user) {
+      return (
+        <ProfilePage
+          user={user}
+          onBack={() => setPage("live")} // or "about" depending on where you came from
+          onSignOut={handleSignOut}
+          onUpdateUser={updateUser} // pass update function to save changes
+        />
+      );
+    }
+
     // default: about page
     return (
       <AboutPage
@@ -111,6 +123,7 @@ export default function App() {
         onSignIn={() => setPage("signin")}
         onSignUp={() => setPage("signup")}
         onHistory={() => setPage("history")}
+        onProfile={() => setPage("profile")}
         onSignOut={handleSignOut}
       />
     );
