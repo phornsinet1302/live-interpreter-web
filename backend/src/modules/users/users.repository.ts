@@ -7,13 +7,17 @@ export function findActiveUserById(id: string) {
 
 export function updateProfile(
   id: string,
-  data: { name?: string; preferredLanguage?: string; theme?: UserTheme }
+  data: {
+    name?: string;
+    preferredLanguage?: string;
+    theme?: UserTheme;
+    notifyExportCompleted?: boolean;
+    notifyTranslationCompleted?: boolean;
+    notifySystemUpdates?: boolean;
+    notifyReminders?: boolean;
+  }
 ) {
   return prisma.user.update({ where: { id }, data });
-}
-
-export function updatePasswordHash(id: string, passwordHash: string) {
-  return prisma.user.update({ where: { id }, data: { passwordHash } });
 }
 
 export function updateAvatarUrl(id: string, avatarUrl: string) {
@@ -22,8 +26,4 @@ export function updateAvatarUrl(id: string, avatarUrl: string) {
 
 export function softDelete(id: string) {
   return prisma.user.update({ where: { id }, data: { deletedAt: new Date() } });
-}
-
-export function deleteAllSessionsForUser(userId: string) {
-  return prisma.session.deleteMany({ where: { userId } });
 }

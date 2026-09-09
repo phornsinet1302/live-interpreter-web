@@ -4,8 +4,8 @@ import { param } from "../../utils/request";
 import type { CreateExportInput } from "./exports.validator";
 
 export async function create(req: Request, res: Response) {
-  const { type } = req.body as CreateExportInput;
-  const record = await service.createExport(param(req, "id"), req.user!.id, type);
+  const { type, format } = req.body as CreateExportInput;
+  const record = await service.createExport(param(req, "id"), req.user!.id, type, format);
   res.status(201).json(record);
 }
 
@@ -20,6 +20,6 @@ export async function remove(req: Request, res: Response) {
 }
 
 export async function download(req: Request, res: Response) {
-  const filePath = await service.getDownloadPath(param(req, "id"), req.user!.id);
-  res.download(filePath);
+  const { filePath, filename } = await service.getDownloadPath(param(req, "id"), req.user!.id);
+  res.download(filePath, filename);
 }

@@ -1,0 +1,150 @@
+/* Injected once via manifest.json's content_scripts.css, but every element
+   this actually styles lives inside the Shadow DOM root content.ts creates —
+   so none of this can leak into (or be broken by) the host page, and the
+   host page's own styles can't reach in here either. System font stacks
+   instead of the app's Google Fonts (Playfair Display/DM Sans/DM Mono) —
+   pulling a remote font into an arbitrary third-party page adds latency and
+   risks a strict host CSP blocking it; the serif/sans split still evokes
+   the same feel with zero external dependency. */
+
+:host {
+  all: initial;
+}
+
+.fluent-trigger {
+  position: fixed;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1c1612;
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 7px 14px;
+  font: 600 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.fluent-trigger:hover {
+  background: #c85a3a;
+}
+
+.fluent-popover {
+  position: fixed;
+  z-index: 2147483647;
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  background: #fdfaf4;
+  border: 1px solid rgba(28, 22, 18, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  padding: 16px;
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1c1612;
+}
+
+.fluent-popover__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fluent-popover__brand {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c85a3a;
+}
+
+.fluent-popover__lang {
+  font: 500 10px/1 ui-monospace, "SF Mono", Consolas, monospace;
+  color: #7a6f62;
+}
+
+.fluent-popover__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7a6f62;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.fluent-popover__close:hover {
+  color: #1c1612;
+}
+
+.fluent-popover__source {
+  font-size: 11px;
+  color: #7a6f62;
+  margin: 0 0 4px;
+  max-height: 3.6em;
+  overflow: hidden;
+}
+
+.fluent-popover__translated {
+  font: italic 600 17px/1.35 Georgia, "Times New Roman", serif;
+  color: #c85a3a;
+  margin: 0 0 6px;
+}
+
+.fluent-popover__phonetic {
+  font: 12px/1.4 ui-monospace, "SF Mono", Consolas, monospace;
+  color: #7a6f62;
+  margin: 0 0 10px;
+}
+
+.fluent-popover__examples {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 8px 0 0;
+  border-top: 1px solid rgba(28, 22, 18, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fluent-popover__examples li {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(28, 22, 18, 0.85);
+}
+
+.fluent-popover__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.fluent-popover__actions button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid rgba(28, 22, 18, 0.12);
+  border-radius: 9999px;
+  padding: 5px 12px;
+  font: 500 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1c1612;
+  cursor: pointer;
+}
+
+.fluent-popover__actions button:hover {
+  background: rgba(28, 22, 18, 0.05);
+}
+
+.fluent-popover__status {
+  font-size: 12px;
+  color: #7a6f62;
+}
+
+.fluent-popover__error {
+  font-size: 12px;
+  color: #b8452f;
+}

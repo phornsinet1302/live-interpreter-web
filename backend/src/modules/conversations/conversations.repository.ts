@@ -17,7 +17,7 @@ export function findById(id: string) {
 
 export function findManyByOwner(
   ownerId: string,
-  filters: { status?: ConversationStatus },
+  filters: { status?: ConversationStatus; isFavorite?: boolean },
   skip: number,
   take: number
 ) {
@@ -27,16 +27,24 @@ export function findManyByOwner(
     orderBy: { createdAt: "desc" },
     skip,
     take,
+    // History (FR-5) needs the summary and a message count for every row up
+    // front — without this it'd be an N+1 fetch per conversation. The full
+    // transcript is still fetched lazily via the existing messages endpoint,
+    // only when a card is expanded.
+    include: {
+      summary: true,
+      _count: { select: { messages: true } },
+    },
   });
 }
 
-export function countByOwner(ownerId: string, filters: { status?: ConversationStatus }) {
+export function countByOwner(ownerId: string, filters: { status?: ConversationStatus; isFavorite?: boolean }) {
   return prisma.conversation.count({ where: { ownerId, ...filters } });
 }
 
 export function update(
   id: string,
-  data: { title?: string; sourceLanguage?: string; targetLanguage?: string }
+  data: { title?: string; sourceLanguage?: string; targetLanguage?: string; isFavorite?: boolean }
 ) {
   return prisma.conversation.update({ where: { id }, data });
 }

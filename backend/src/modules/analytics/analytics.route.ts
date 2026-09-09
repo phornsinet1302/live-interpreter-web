@@ -45,6 +45,30 @@ analyticsRouter.get("/languages", controller.languages);
 
 /**
  * @openapi
+ * /analytics/summary-usage:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: How much the current user relies on AI conversation summaries
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Summary usage stats }
+ */
+analyticsRouter.get("/summary-usage", controller.summaryUsage);
+
+/**
+ * @openapi
+ * /analytics/history-usage:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: How much saved conversation history the current user has
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: History usage stats }
+ */
+analyticsRouter.get("/history-usage", controller.historyUsage);
+
+/**
+ * @openapi
  * /analytics/users:
  *   get:
  *     tags: [Analytics]

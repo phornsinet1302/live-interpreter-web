@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import UserNav from "./UserNav";
+import NotificationBell from "./NotificationBell";
 import Logo from "@/components/ui/common/Logo";
 import MagneticButton from "@/components/ui/common/MagneticButton";
 import { UserAccount } from "@/types";
@@ -9,17 +10,29 @@ import { fadeUp } from "@/lib/motion";
 
 export default function Navbar({
   user,
+  isSignedIn,
   onLive,
   onSignIn,
   onSignUp,
   onHistory,
+  onDashboard,
+  onSettings,
   onSignOut,
 }: {
   user: UserAccount | null;
+  // Clerk's own signed-in state, distinct from `user` (this app's synced
+  // profile) — Clerk can consider the browser authenticated a moment before
+  // (or, on a persistent backend failure, indefinitely after) the profile
+  // fetch succeeds. Without this, that gap showed "Sign in"/"Get started"
+  // while actually signed in — clicking either just re-mounted the sign-in
+  // form on top of an already-active session with no way to recover.
+  isSignedIn: boolean;
   onLive: () => void;
   onSignIn: () => void;
   onSignUp: () => void;
   onHistory: () => void;
+  onDashboard: () => void;
+  onSettings: () => void;
   onSignOut: () => void;
 }) {
   const { reduceMotion, isMobile } = useMotionPrefs();
@@ -47,7 +60,18 @@ export default function Navbar({
       </button>
       <div className="flex items-center gap-3">
         {user ? (
-          <UserNav user={user} onHistory={onHistory} onSignOut={onSignOut} />
+          <>
+            <NotificationBell />
+            <UserNav user={user} onHistory={onHistory} onDashboard={onDashboard} onSettings={onSettings} onSignOut={onSignOut} />
+          </>
+        ) : isSignedIn ? (
+          <button
+            onClick={onSignOut}
+            title="Signed in, but your profile couldn't be loaded — try signing out and back in."
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-[250ms] outline-none rounded-sm focus-visible:ring-2 focus-visible:ring-accent/50 px-1"
+          >
+            Sign out
+          </button>
         ) : (
           <>
             <button

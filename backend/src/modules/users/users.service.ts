@@ -1,13 +1,12 @@
 import path from "node:path";
 import { unlink } from "node:fs/promises";
 import * as repo from "./users.repository";
-import * as hashLib from "../../lib/bcrypt";
 import { env } from "../../config/env";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
 import { recordAuditLog } from "../../utils/audit-log";
 import type { User, UserTheme } from "../../lib/prisma-client";
-import type { ChangePasswordInput, PublicUser, UpdateProfileInput } from "./users.types";
+import type { PublicUser, UpdateProfileInput } from "./users.types";
 
 export function toPublicUser(user: User): PublicUser {
   return {
@@ -21,6 +20,10 @@ export function toPublicUser(user: User): PublicUser {
     isVerified: user.isVerified,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    notifyExportCompleted: user.notifyExportCompleted,
+    notifyTranslationCompleted: user.notifyTranslationCompleted,
+    notifySystemUpdates: user.notifySystemUpdates,
+    notifyReminders: user.notifyReminders,
   };
 }
 
@@ -38,6 +41,10 @@ export async function updateProfile(
     name: input.name,
     preferredLanguage: input.preferredLanguage,
     theme: input.theme as UserTheme | undefined,
+    notifyExportCompleted: input.notifyExportCompleted,
+    notifyTranslationCompleted: input.notifyTranslationCompleted,
+    notifySystemUpdates: input.notifySystemUpdates,
+    notifyReminders: input.notifyReminders,
   });
   return toPublicUser(user);
 }
@@ -59,25 +66,7 @@ export async function updateAvatar(
   return toPublicUser(user);
 }
 
-export async function changePassword(userId: string, input: ChangePasswordInput) {
-  const user = await repo.findActiveUserById(userId);
-  if (!user) throw ApiError.notFound("User not found");
-
-  if (user.passwordHash) {
-    if (!input.currentPassword) {
-      throw ApiError.badRequest("Current password is required");
-    }
-    const valid = await hashLib.compare(input.currentPassword, user.passwordHash);
-    if (!valid) throw ApiError.unauthorized("Current password is incorrect");
-  }
-
-  const passwordHash = await hashLib.hash(input.newPassword);
-  await repo.updatePasswordHash(userId, passwordHash);
-  await recordAuditLog({ userId, action: "change_password", resource: "users" });
-}
-
 export async function deleteAccount(userId: string) {
   await repo.softDelete(userId);
-  await repo.deleteAllSessionsForUser(userId);
   await recordAuditLog({ userId, action: "delete_account", resource: "users" });
 }

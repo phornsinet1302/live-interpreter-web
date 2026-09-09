@@ -2,11 +2,10 @@ export interface UpdateProfileInput {
   name?: string;
   preferredLanguage?: string;
   theme?: "light" | "dark" | "system";
-}
-
-export interface ChangePasswordInput {
-  currentPassword?: string;
-  newPassword: string;
+  notifyExportCompleted?: boolean;
+  notifyTranslationCompleted?: boolean;
+  notifySystemUpdates?: boolean;
+  notifyReminders?: boolean;
 }
 
 export interface PublicUser {
@@ -20,4 +19,8 @@ export interface PublicUser {
   isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
+  notifyExportCompleted: boolean;
+  notifyTranslationCompleted: boolean;
+  notifySystemUpdates: boolean;
+  notifyReminders: boolean;
 }

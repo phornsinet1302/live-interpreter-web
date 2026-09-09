@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
+import { requireRole } from "../../middleware/role.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import * as controller from "./notifications.controller";
-import { listNotificationsQuerySchema } from "./notifications.validator";
+import { broadcastSchema, listNotificationsQuerySchema } from "./notifications.validator";
 
 export const notificationsRouter = Router();
 
@@ -26,6 +27,58 @@ notificationsRouter.get(
   "/",
   validate(listNotificationsQuerySchema, "query"),
   controller.list
+);
+
+/**
+ * @openapi
+ * /notifications/unread-count:
+ *   get:
+ *     tags: [Notifications]
+ *     summary: Count of the current user's unread notifications
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Unread count }
+ */
+notificationsRouter.get("/unread-count", controller.unreadCount);
+
+/**
+ * @openapi
+ * /notifications/read-all:
+ *   patch:
+ *     tags: [Notifications]
+ *     summary: Mark every one of the current user's notifications as read
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       204: { description: Marked read }
+ */
+notificationsRouter.patch("/read-all", controller.markAllRead);
+
+/**
+ * @openapi
+ * /notifications/broadcast:
+ *   post:
+ *     tags: [Notifications]
+ *     summary: Send a system-update notification to every opted-in user (admin/moderator only)
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [title, message]
+ *             properties:
+ *               title: { type: string }
+ *               message: { type: string }
+ *     responses:
+ *       201: { description: Broadcast sent }
+ *       403: { description: Insufficient permissions }
+ */
+notificationsRouter.post(
+  "/broadcast",
+  requireRole("admin", "moderator"),
+  validate(broadcastSchema),
+  controller.broadcast
 );
 
 /**

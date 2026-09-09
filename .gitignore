@@ -27,6 +27,7 @@ backend/uploads/
 # production
 /build
 /backend/dist
+/extension/dist
 
 # misc
 .DS_Store

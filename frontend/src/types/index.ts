@@ -1,21 +1,51 @@
-export interface UserAccount {
-	name: string;
-	email: string;
+export interface NotificationPreferences {
+	exportCompleted: boolean;
+	translationCompleted: boolean;
+	systemUpdates: boolean;
+	reminders: boolean;
 }
 
-export interface ConversationExchange {
-	source: string;
-	translated: string;
+export interface UserAccount {
+	id: string;
+	name: string;
+	email: string;
+	avatarUrl: string | null;
+	preferredLanguage: string;
+	theme: "light" | "dark" | "system";
+	notifications: NotificationPreferences;
+}
+
+// Real backend shapes (FR-5) — History reads live from the API, no local
+// mock data. A conversation's summary, when present, is one row generated
+// either from the live quick-summary (saved as-is via PUT .../summary) or by
+// regenerating through OpenAI (POST .../summary) — see summaries.service.ts.
+export interface ConversationSummary {
+	summary: string;
+	keyPoints: string[];
+	actionItems: { text: string }[];
+	keywords: string[];
 }
 
 export interface ConversationEntry {
 	id: string;
-	date: string;
+	title: string;
 	sourceLang: string;
 	targetLang: string;
-	title: string;
-	duration: string;
-	exchanges: ConversationExchange[];
-	summary: string[];
-	nextSteps: string[];
+	status: "waiting" | "active" | "paused" | "ended" | "archived";
+	isFavorite: boolean;
+	messageCount: number;
+	createdAt: string;
+	startedAt: string | null;
+	endedAt: string | null;
+	summary: ConversationSummary | null;
+}
+
+export interface ConversationMessage {
+	id: string;
+	originalText: string;
+	translatedText: string;
+	sourceLanguage: string;
+	targetLanguage: string;
+	speakerId: string | null;
+	createdAt: string;
 }

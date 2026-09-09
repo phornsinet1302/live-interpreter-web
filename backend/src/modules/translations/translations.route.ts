@@ -5,7 +5,7 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 import { quickTranslateLimiter } from "../../middleware/rate-limit.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import * as controller from "./translations.controller";
-import { createMessageSchema, listMessagesQuerySchema, quickTranslateSchema } from "./translations.validator";
+import { createMessageSchema, listMessagesQuerySchema, lookupSchema, quickTranslateSchema } from "./translations.validator";
 
 // Mounted at /translate (see app.ts) — deliberately unauthenticated and not
 // tied to a conversation, for the pre-signup live-translate demo. Nothing
@@ -37,6 +37,34 @@ quickTranslateRouter.post(
   quickTranslateLimiter,
   validate(quickTranslateSchema),
   controller.quickTranslate
+);
+
+/**
+ * @openapi
+ * /translate/lookup:
+ *   post:
+ *     tags: [Messages]
+ *     summary: Look up a word/phrase with translation, phonetics, and examples (no auth, not persisted)
+ *     description: Powers the browser extension's highlight-to-translate popover.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [text, sourceLanguage, targetLanguage]
+ *             properties:
+ *               text: { type: string, example: "serendipity" }
+ *               sourceLanguage: { type: string, example: "auto" }
+ *               targetLanguage: { type: string, example: "Khmer" }
+ *     responses:
+ *       200: { description: Translation with optional phonetic reading and example sentences }
+ */
+quickTranslateRouter.post(
+  "/lookup",
+  quickTranslateLimiter,
+  validate(lookupSchema),
+  controller.lookup
 );
 
 export const translationsRouter = Router({ mergeParams: true });

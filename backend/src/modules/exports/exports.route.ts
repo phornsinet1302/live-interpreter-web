@@ -27,6 +27,7 @@ conversationExportsRouter.use(authMiddleware);
  *             required: [type]
  *             properties:
  *               type: { type: string, enum: [transcript, summary, audio, full] }
+ *               format: { type: string, enum: [pdf, docx, txt], default: txt }
  *     responses:
  *       201: { description: Export created (status reflects processing result) }
  */

@@ -13,6 +13,14 @@ export async function languages(req: Request, res: Response) {
   res.json(await service.getLanguageStats(req.user!.id));
 }
 
+export async function summaryUsage(req: Request, res: Response) {
+  res.json(await service.getSummaryUsage(req.user!.id));
+}
+
+export async function historyUsage(req: Request, res: Response) {
+  res.json(await service.getHistoryUsage(req.user!.id));
+}
+
 export async function users(_req: Request, res: Response) {
   res.json(await service.getUserStats());
 }

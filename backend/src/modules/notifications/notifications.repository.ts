@@ -38,6 +38,10 @@ export function markRead(id: string) {
   return prisma.notification.update({ where: { id }, data: { isRead: true } });
 }
 
+export function markAllReadForUser(userId: string) {
+  return prisma.notification.updateMany({ where: { userId, isRead: false }, data: { isRead: true } });
+}
+
 export function remove(id: string) {
   return prisma.notification.delete({ where: { id } });
 }

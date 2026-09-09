@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion, useMotionValue, useScroll, useSpring, useTransform, type Variants } from "framer-motion";
-import { ArrowLeftRight, Mic, Volume2, Copy, Check, BrainCircuit, Gauge, Languages } from "lucide-react";
+import { ArrowLeftRight, Mic, BrainCircuit, Gauge, Languages } from "lucide-react";
 import Navbar from "@/components/ui/layout/Navbar";
 import Footer from "@/components/ui/layout/Footer";
 import PlatformSection from "@/components/ui/features/marketing/PlatformSection";
@@ -8,7 +8,6 @@ import FeatureCard from "@/components/ui/features/marketing/FeatureCard";
 import LanguageSelect from "@/components/ui/features/translation/LanguageSelect";
 import BotanicalLeft from "@/components/ui/common/BotanicalLeft";
 import BotanicalRight from "@/components/ui/common/BotanicalRight";
-import MagneticButton from "@/components/ui/common/MagneticButton";
 import { useMotionPrefs } from "@/hooks/useMotionPrefs";
 import { EASE, fadeUp, revealVariants } from "@/lib/motion";
 import { UserAccount } from "@/types";
@@ -17,26 +16,34 @@ const headlineLines = ["Translate the", "World, One", "Word at a Time"];
 
 export default function AboutPage({
   user,
+  isSignedIn,
   onLive,
+  onQuickStart,
   onSignIn,
   onSignUp,
   onHistory,
+  onDashboard,
+  onSettings,
   onSignOut,
 }: {
   user: UserAccount | null;
+  isSignedIn: boolean;
   onLive: () => void;
+  // Tapping the mic below picks up a real getUserMedia/SpeechRecognition
+  // session on the Live page (see LiveTranslate's autoStart), which this
+  // page can't hold itself without duplicating that whole hook — so this
+  // just hands off the chosen languages and lets Live start listening the
+  // instant it mounts, keeping the "one click, no second tap" feel.
+  onQuickStart: (sourceLang: string, targetLang: string) => void;
   onSignIn: () => void;
   onSignUp: () => void;
   onHistory: () => void;
+  onDashboard: () => void;
+  onSettings: () => void;
   onSignOut: () => void;
 }) {
   const [sourceLang, setSourceLang] = useState("English");
   const [targetLang, setTargetLang] = useState("Khmer");
-  const [sourceText, setSourceText] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [charCount, setCharCount] = useState(0);
   const { reduceMotion, richMotionEnabled, isMobile } = useMotionPrefs();
 
   const heroRef = useRef<HTMLElement>(null);
@@ -57,6 +64,11 @@ export default function AboutPage({
   const glowSpringY = useSpring(glowY, { stiffness: 150, damping: 22 });
   const [glowVisible, setGlowVisible] = useState(false);
 
+  const handleSwap = () => {
+    setSourceLang(targetLang);
+    setTargetLang(sourceLang);
+  };
+
   const handleHeroMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (!richMotionEnabled || !heroRef.current) return;
     const rect = heroRef.current.getBoundingClientRect();
@@ -71,42 +83,6 @@ export default function AboutPage({
   const whyRef = useRef<HTMLElement>(null);
   const { scrollYProgress: whyScrollProgress } = useScroll({ target: whyRef, offset: ["start end", "end start"] });
   const cardsScrollY = useTransform(whyScrollProgress, [0, 1], richMotionEnabled ? [40, -40] : [0, 0]);
-
-  const handleSourceChange = (text: string) => {
-    if (text.length <= 5000) {
-      setSourceText(text);
-      setCharCount(text.length);
-      setTranslatedText("");
-    }
-  };
-
-  const handleSwap = () => {
-    const tmp = sourceLang;
-    setSourceLang(targetLang);
-    setTargetLang(tmp);
-    setSourceText(translatedText);
-    setTranslatedText(sourceText);
-    setCharCount(translatedText.length);
-  };
-
-  const handleTranslate = useCallback(() => {
-    if (!sourceText.trim()) return;
-    setIsTranslating(true);
-    setTimeout(() => {
-      const samples: Record<string, string> = {
-        Khmer: "សួស្តី សូមស្វាគមន៍មកកាន់ពិភពនៃលទ្ធភាពគ្មានដែនកំណត់។ ការបកប្រែភ្ជាប់វប្បធម៌ និងបើកទ្វារទៅរកទស្សនវិស័យថ្មីៗ។",
-      };
-      setTranslatedText(samples[targetLang] || `[${targetLang} translation of your text would appear here. Connect to a translation API to enable live translations.]`);
-      setIsTranslating(false);
-    }, 1100);
-  }, [sourceText, targetLang]);
-
-  const handleCopy = () => {
-    if (!translatedText) return;
-    navigator.clipboard.writeText(translatedText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const headlineContainer = {
     hidden: { opacity: 0, scale: reduceMotion ? 1 : 0.97 },
@@ -171,7 +147,7 @@ export default function AboutPage({
         }
       `}</style>
 
-      <Navbar user={user} onLive={onLive} onSignIn={onSignIn} onSignUp={onSignUp} onHistory={onHistory} onSignOut={onSignOut} />
+      <Navbar user={user} isSignedIn={isSignedIn} onLive={onLive} onSignIn={onSignIn} onSignUp={onSignUp} onHistory={onHistory} onDashboard={onDashboard} onSettings={onSettings} onSignOut={onSignOut} />
 
       <section
         ref={heroRef}
@@ -265,19 +241,43 @@ export default function AboutPage({
 
             <motion.div
               {...fadeUp({ y: 20, duration: 0.6, delay: 0.7, reduceMotion, isMobile })}
-              className="flex items-center justify-center gap-3 mt-7"
+              className="flex flex-col items-center gap-5 mt-7"
             >
-              <MagneticButton
-                onClick={onLive}
-                magneticStrength={0.2}
-                className="bg-primary text-primary-foreground px-7 py-3 rounded-full text-sm font-semibold flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-accent/50 transition-[background-color,box-shadow,filter] duration-[250ms] hover:bg-accent hover:shadow-lg hover:brightness-105"
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Speaking</p>
+                  <LanguageSelect value={sourceLang} onChange={setSourceLang} />
+                </div>
+                <button
+                  onClick={handleSwap}
+                  className="flex items-center gap-1 text-muted-foreground/40 hover:text-accent pb-1 transition-colors duration-150"
+                  aria-label="Swap languages"
+                >
+                  <div className="w-8 h-px bg-border" />
+                  <ArrowLeftRight size={12} />
+                  <div className="w-8 h-px bg-border" />
+                </button>
+                <div className="text-center">
+                  <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-0.5">Translating to</p>
+                  <LanguageSelect value={targetLang} onChange={setTargetLang} />
+                </div>
+              </div>
+
+              {/* Tapping this hands off to the Live page with autoStart, so
+                  listening begins the instant it mounts there — this page
+                  can't itself hold a getUserMedia/SpeechRecognition session
+                  without duplicating that hook. */}
+              <button
+                onClick={() => onQuickStart(sourceLang, targetLang)}
+                aria-label="Start speaking"
+                className="w-16 h-16 rounded-full flex items-center justify-center focus:outline-none transition-transform duration-150 hover:scale-105 active:scale-95"
+                style={{ background: "#C85A3A" }}
               >
-                <Mic size={14} />
-                Start translating
-              </MagneticButton>
-              <button className="border border-border text-foreground px-7 py-3 rounded-full text-sm font-medium transition-all duration-[250ms] outline-none focus-visible:ring-2 focus-visible:ring-accent/50 hover:bg-secondary hover:-translate-y-0.5">
-                ▶ How it works
+                <Mic size={22} className="text-white" />
               </button>
+              <p className="text-xs font-['DM_Mono'] text-muted-foreground tracking-[0.15em] uppercase -mt-2">
+                Tap to speak
+              </p>
             </motion.div>
           </div>
 
@@ -300,76 +300,6 @@ export default function AboutPage({
           </div>
         </div>
       </section>
-
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={revealVariants({ reduceMotion, isMobile })}
-        className="px-8 md:px-16 pb-16 pt-4"
-      >
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-stretch border-b border-border">
-              <div className="flex items-center gap-4 px-6 py-3.5 border-r border-border">
-                <LanguageSelect value={sourceLang} onChange={setSourceLang} />
-              </div>
-              <div className="flex items-center justify-center px-4">
-                <button onClick={handleSwap} className="w-9 h-9 rounded-full bg-accent text-accent-foreground flex items-center justify-center hover:scale-110 transition-transform duration-200">
-                  <ArrowLeftRight size={15} />
-                </button>
-              </div>
-              <div className="flex items-center gap-4 px-6 py-3.5 border-l border-border">
-                <LanguageSelect value={targetLang} onChange={setTargetLang} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 min-h-[260px]">
-              <div className="relative flex flex-col border-b md:border-b-0 md:border-r border-border">
-                <textarea
-                  value={sourceText}
-                  onChange={(e) => handleSourceChange(e.target.value)}
-                  placeholder="Type or paste text here…"
-                  className="flex-1 resize-none bg-transparent px-6 pt-5 pb-14 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 outline-none min-h-[220px] font-['DM_Sans']"
-                />
-                <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
-                  <span className="text-xs font-['DM_Mono'] text-muted-foreground/60">{charCount} / 5000</span>
-                  <button
-                    onClick={handleTranslate}
-                    disabled={!sourceText.trim() || isTranslating}
-                    className="bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-semibold hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
-                  >
-                    {isTranslating ? (
-                      <><span className="w-3 h-3 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />Translating…</>
-                    ) : "Translate →"}
-                  </button>
-                </div>
-              </div>
-              <div className="relative flex flex-col bg-secondary/30">
-                <div className="flex-1 px-6 pt-5 pb-14 text-[15px] leading-relaxed min-h-[220px] font-['DM_Sans']">
-                  {translatedText ? (
-                    <p className="text-foreground">{translatedText}</p>
-                  ) : (
-                    <p className="text-muted-foreground/40 italic">
-                      {isTranslating ? "Translating your text…" : "Translation will appear here"}
-                    </p>
-                  )}
-                </div>
-                {translatedText && (
-                  <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between">
-                    <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      <Volume2 size={13} />Listen
-                    </button>
-                    <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      {copied ? <Check size={13} className="text-accent" /> : <Copy size={13} />}
-                      {copied ? "Copied!" : "Copy"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
 
       <motion.section
         ref={whyRef}

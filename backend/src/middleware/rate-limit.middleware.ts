@@ -32,6 +32,28 @@ export const quickTranslateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Applied to the unauthenticated quick-transcribe endpoint. Same short
+// rolling window as quick-translate, for the same reason — one busy Khmer
+// conversation can fire a transcribe call per utterance, easily 10-15/min.
+export const quickTranscribeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Applied to the unauthenticated quick-next-step endpoint (the live
+// mid-session nudge). The frontend's own dedup logic — only calling this when
+// the transcript has grown since the last suggestion — is the real throttle;
+// this is mostly a safety net against abuse, so a short rolling window with a
+// modest cap is enough.
+export const quickNextStepLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Applied to the unauthenticated quick-summarize endpoint. Unlike
 // quick-translate, this fires once per finished conversation, not once per
 // sentence, so a much lower cap is plenty — kept as a 15-minute window

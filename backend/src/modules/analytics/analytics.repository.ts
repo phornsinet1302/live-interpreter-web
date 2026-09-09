@@ -1,5 +1,17 @@
 import { prisma } from "../../lib/prisma";
 
+// ISO week key ("2026-W37") for the week bucket in translationStats — Sunday
+// in Date-land isn't week-start here, this follows the ISO-8601 convention
+// (weeks start Monday, week 1 contains the year's first Thursday).
+function isoWeekKey(date: Date): string {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+}
+
 async function conversationIdsForOwner(ownerId: string): Promise<string[]> {
   const rows = await prisma.conversation.findMany({
     where: { ownerId },
@@ -42,7 +54,7 @@ export async function dashboardStats(ownerId: string) {
 export async function translationStats(ownerId: string) {
   const ids = await conversationIdsForOwner(ownerId);
   if (ids.length === 0) {
-    return { totalMessages: 0, byProvider: [], byDay: [] };
+    return { totalMessages: 0, byProvider: [], byDay: [], byWeek: [], byMonth: [] };
   }
 
   const [byProvider, messages] = await Promise.all([
@@ -58,10 +70,21 @@ export async function translationStats(ownerId: string) {
   ]);
 
   const byDayMap = new Map<string, number>();
+  const byWeekMap = new Map<string, number>();
+  const byMonthMap = new Map<string, number>();
   for (const m of messages) {
     const day = m.createdAt.toISOString().slice(0, 10);
     byDayMap.set(day, (byDayMap.get(day) ?? 0) + 1);
+    const week = isoWeekKey(m.createdAt);
+    byWeekMap.set(week, (byWeekMap.get(week) ?? 0) + 1);
+    const month = m.createdAt.toISOString().slice(0, 7);
+    byMonthMap.set(month, (byMonthMap.get(month) ?? 0) + 1);
   }
+
+  const toSortedEntries = (map: Map<string, number>, key: string) =>
+    Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, count]) => ({ [key]: k, count }));
 
   return {
     totalMessages: messages.length,
@@ -69,10 +92,32 @@ export async function translationStats(ownerId: string) {
       provider: p.translationProvider,
       count: p._count._all,
     })),
-    byDay: Array.from(byDayMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([day, count]) => ({ day, count })),
+    byDay: toSortedEntries(byDayMap, "day"),
+    byWeek: toSortedEntries(byWeekMap, "week"),
+    byMonth: toSortedEntries(byMonthMap, "month"),
   };
+}
+
+export async function summaryUsageStats(ownerId: string) {
+  const [totalConversations, conversationsSummarized] = await Promise.all([
+    prisma.conversation.count({ where: { ownerId } }),
+    prisma.summary.count({ where: { conversation: { ownerId } } }),
+  ]);
+
+  return { totalConversations, conversationsSummarized };
+}
+
+// "History usage" — how much of their own saved history a user has
+// accumulated. endedConversations (vs. totalConversations) reflects sessions
+// actually completed rather than abandoned mid-way.
+export async function historyUsageStats(ownerId: string) {
+  const [totalConversations, totalMessages, endedConversations] = await Promise.all([
+    prisma.conversation.count({ where: { ownerId } }),
+    prisma.conversationMessage.count({ where: { conversation: { ownerId } } }),
+    prisma.conversation.count({ where: { ownerId, status: "ended" } }),
+  ]);
+
+  return { totalConversations, totalMessages, endedConversations };
 }
 
 export async function languageStats(ownerId: string) {

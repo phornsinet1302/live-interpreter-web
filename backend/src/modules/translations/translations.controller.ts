@@ -1,11 +1,17 @@
 import type { Request, Response } from "express";
 import * as service from "./translations.service";
 import { param } from "../../utils/request";
-import type { CreateMessageInput, ListMessagesQuery, QuickTranslateInput } from "./translations.validator";
+import type { CreateMessageInput, ListMessagesQuery, LookupInput, QuickTranslateInput } from "./translations.validator";
 
 export async function quickTranslate(req: Request, res: Response) {
   const { text, sourceLanguage, targetLanguage } = req.body as QuickTranslateInput;
   const result = await service.translateText(text, sourceLanguage, targetLanguage);
+  res.json(result);
+}
+
+export async function lookup(req: Request, res: Response) {
+  const { text, sourceLanguage, targetLanguage } = req.body as LookupInput;
+  const result = await service.lookupText(text, sourceLanguage, targetLanguage);
   res.json(result);
 }
 

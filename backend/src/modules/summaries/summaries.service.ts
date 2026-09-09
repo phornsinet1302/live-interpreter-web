@@ -4,7 +4,7 @@ import { openai } from "../../lib/openai";
 import { gemini } from "../../lib/gemini";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
-import type { QuickSummaryInput } from "./summaries.validator";
+import type { QuickSummaryInput, SaveSummaryInput } from "./summaries.validator";
 
 interface GeneratedSummary {
   summary: string;
@@ -16,6 +16,9 @@ interface GeneratedSummary {
 export interface QuickSummaryResult {
   summary: string[];
   nextSteps: string[];
+  actionItems: string[];
+  keywords: string[];
+  speakerSummaries: { speaker: string; summary: string }[];
 }
 
 // Unauthenticated counterpart to createOrRegenerateSummary — takes the
@@ -28,28 +31,55 @@ export async function quickSummarize({
   targetLanguage,
 }: QuickSummaryInput): Promise<QuickSummaryResult> {
   const transcript = exchanges
-    .map((e) => `${sourceLanguage}: ${e.source}\n${targetLanguage}: ${e.translated}`)
+    .map((e) => {
+      const who = e.speakerName ?? sourceLanguage;
+      return `${who} (${sourceLanguage}): ${e.source}\n${who} (${targetLanguage} translation): ${e.translated}`;
+    })
     .join("\n\n");
+
+  // Only worth asking for a per-speaker breakdown when there's more than
+  // one named speaker — otherwise it'd just restate the overall summary.
+  const speakers = Array.from(new Set(exchanges.map((e) => e.speakerName).filter((s): s is string => !!s)));
+  const speakerInstruction =
+    speakers.length > 1
+      ? `Also produce a one-to-two-sentence summary of what each of these speakers specifically said or contributed: ${speakers.join(", ")} ("speakerSummaries", an array of {"speaker": string, "summary": string}, one entry per speaker listed). `
+      : 'Leave "speakerSummaries" as an empty array — there is only one identified speaker. ';
 
   try {
     const response = await gemini.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash-lite",
       contents: transcript,
       config: {
         systemInstruction:
           `You are summarizing a translated conversation between ${sourceLanguage} and ${targetLanguage} speakers. ` +
-          `Write your response in ${targetLanguage}. ` +
-          "Produce a short summary of what was discussed as 2-5 bullet points, and 2-4 concrete, actionable next steps " +
-          "the participants should take based on what was said (skip generic advice — base them on the actual content). " +
-          'Respond ONLY with JSON of the shape {"summary": string[], "nextSteps": string[]}.',
+          `Write your response in ${sourceLanguage} — the main speaker's own language, not the translation. ` +
+          "Produce a short summary of what was discussed as 2-5 bullet points (\"summary\"); 2-4 concrete, actionable " +
+          "next steps the participants should take based on what was said (\"nextSteps\"); 2-5 concrete action items " +
+          "or commitments made during the discussion, phrased as tasks (\"actionItems\"); and 3-8 important keywords " +
+          "or topics from the conversation (\"keywords\"). Skip generic advice — base everything on the actual content. " +
+          speakerInstruction +
+          'Respond ONLY with JSON of the shape {"summary": string[], "nextSteps": string[], "actionItems": string[], ' +
+          '"keywords": string[], "speakerSummaries": [{"speaker": string, "summary": string}]}.',
         responseMimeType: "application/json",
       },
     });
 
     const raw = response.text;
     if (!raw) throw new Error("Empty completion");
-    const parsed = JSON.parse(raw) as { summary?: string[]; nextSteps?: string[] };
-    return { summary: parsed.summary ?? [], nextSteps: parsed.nextSteps ?? [] };
+    const parsed = JSON.parse(raw) as {
+      summary?: string[];
+      nextSteps?: string[];
+      actionItems?: string[];
+      keywords?: string[];
+      speakerSummaries?: { speaker: string; summary: string }[];
+    };
+    return {
+      summary: parsed.summary ?? [],
+      nextSteps: parsed.nextSteps ?? [],
+      actionItems: parsed.actionItems ?? [],
+      keywords: parsed.keywords ?? [],
+      speakerSummaries: parsed.speakerSummaries ?? [],
+    };
   } catch (error) {
     logger.error("Quick summary generation failed", error);
     throw new ApiError(502, "Summary generation is currently unavailable", "SUMMARY_FAILED");
@@ -98,6 +128,16 @@ export async function createOrRegenerateSummary(conversationId: string, userId: 
     keyPoints: result.keyPoints ?? [],
     actionItems: result.actionItems ?? [],
     keywords: result.keywords ?? [],
+  });
+}
+
+export async function saveSummary(conversationId: string, userId: string, input: SaveSummaryInput) {
+  await getConversationForOwner(conversationId, userId);
+  return repo.upsert(conversationId, {
+    summary: input.summary,
+    keyPoints: input.keyPoints,
+    actionItems: input.actionItems.map((text) => ({ text })),
+    keywords: input.keywords,
   });
 }
 

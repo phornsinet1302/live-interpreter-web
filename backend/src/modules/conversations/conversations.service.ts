@@ -1,4 +1,5 @@
 import * as repo from "./conversations.repository";
+import * as notificationsService from "../notifications/notifications.service";
 import { ApiError } from "../../utils/api-error";
 import { toSkipTake, paginated, type PaginationQuery } from "../../utils/pagination";
 import { getIO } from "../../websocket/socket";
@@ -34,10 +35,13 @@ export function createConversation(ownerId: string, input: CreateConversationInp
 
 export async function listConversations(
   ownerId: string,
-  query: PaginationQuery & { status?: ConversationStatus }
+  query: PaginationQuery & { status?: ConversationStatus; isFavorite?: boolean }
 ) {
   const { page, limit, skip, take } = toSkipTake(query);
-  const filters = query.status ? { status: query.status } : {};
+  const filters = {
+    ...(query.status ? { status: query.status } : {}),
+    ...(query.isFavorite !== undefined ? { isFavorite: query.isFavorite } : {}),
+  };
   const [data, total] = await Promise.all([
     repo.findManyByOwner(ownerId, filters, skip, take),
     repo.countByOwner(ownerId, filters),
@@ -89,6 +93,15 @@ export async function transition(
     startedAt: updated.startedAt,
     endedAt: updated.endedAt,
   });
+
+  if (action === "end") {
+    await notificationsService.createForUser(userId, {
+      title: "Translation completed",
+      message: `Your conversation "${updated.title}" has finished.`,
+      type: "success",
+      preferenceKey: "notifyTranslationCompleted",
+    });
+  }
 
   return updated;
 }

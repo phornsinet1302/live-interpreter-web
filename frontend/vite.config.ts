@@ -20,6 +20,11 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  // Serves the app under /live-interpreter/ instead of the bare origin, so
+  // the dev URL reads as http://localhost:5173/live-interpreter/ rather
+  // than just the port number. Vite rewrites index.html's asset paths (and
+  // everything import.meta.env.BASE_URL-aware) to match automatically.
+  base: '/live-interpreter/',
   plugins: [
     figmaAssetResolver(),
     react(),

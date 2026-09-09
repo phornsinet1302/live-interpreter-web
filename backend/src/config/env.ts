@@ -17,34 +17,19 @@ export const env = {
 
   databaseUrl: required("DATABASE_URL"),
 
-  jwt: {
-    accessSecret: required("JWT_ACCESS_SECRET"),
-    refreshSecret: required("JWT_REFRESH_SECRET"),
-    accessExpiry: process.env.JWT_ACCESS_EXPIRY ?? "15m",
-    refreshExpiry: process.env.JWT_REFRESH_EXPIRY ?? "30d",
+  clerk: {
+    secretKey: required("CLERK_SECRET_KEY"),
+    publishableKey: required("CLERK_PUBLISHABLE_KEY"),
   },
 
-  passwordReset: {
-    secret: required("PASSWORD_RESET_SECRET"),
-    expiry: process.env.PASSWORD_RESET_EXPIRY ?? "15m",
-  },
-
-  googleClientId: process.env.GOOGLE_CLIENT_ID,
   openaiApiKey: process.env.OPENAI_API_KEY,
+  googleApiKey: process.env.GOOGLE_API_KEY,
 
   // Vertex AI (Gemini) — auth is via ADC, not an API key, per org policy.
   gcp: {
     projectId: process.env.GCP_PROJECT_ID,
     location: process.env.GCP_LOCATION ?? "us-central1",
   },
-
-  // Gmail SMTP via nodemailer. GMAIL_APP_PASSWORD is a 16-character Google
-  // "App Password" (requires 2-Step Verification on the account), not the
-  // account's real password.
-  gmailUser: process.env.GMAIL_USER,
-  // Google displays app passwords with cosmetic spaces (e.g. "abcd efgh
-  // ijkl mnop") — strip them, since the real credential has none.
-  gmailAppPassword: process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, ""),
 
   corsOrigins: (process.env.CORS_ORIGINS ?? "http://localhost:3000")
     .split(",")

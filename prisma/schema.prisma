@@ -94,12 +94,14 @@ enum SuggestionPriority {
 // 1. users
 // ──────────────────────────────────────────────────────────────────────────
 
+// id is Clerk's own user id (e.g. "user_2abc...") — written by the backend's
+// auth middleware on first sight of a new Clerk identity (find-or-create),
+// never self-generated. Clerk owns credentials/verification/sessions;
+// everything below is the app-specific profile data Clerk doesn't store.
 model User {
-  id                String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  id                String    @id
   name              String
   email             String    @unique
-  passwordHash      String?   @map("password_hash")
-  googleId          String?   @unique @map("google_id")
   avatarUrl         String?   @map("avatar_url")
   preferredLanguage String    @default("en") @map("preferred_language")
   theme             UserTheme @default(system)
@@ -109,42 +111,22 @@ model User {
   updatedAt         DateTime  @updatedAt @map("updated_at")
   deletedAt         DateTime? @map("deleted_at")
 
-  // Email verification (OTP) — one active code at a time; reissuing (resend)
-  // overwrites these rather than keeping history.
-  verificationCode          String?   @map("verification_code")
-  verificationCodeExpiresAt DateTime? @map("verification_code_expires_at")
-  verificationCodeSentAt    DateTime? @map("verification_code_sent_at")
-  verifiedAt                DateTime? @map("verified_at")
+  // Per-category notification opt-outs (FR-12) — all default true so
+  // existing users keep receiving what they already implicitly got.
+  notifyExportCompleted      Boolean @default(true) @map("notify_export_completed")
+  notifyTranslationCompleted Boolean @default(true) @map("notify_translation_completed")
+  notifySystemUpdates        Boolean @default(true) @map("notify_system_updates")
+  notifyReminders            Boolean @default(true) @map("notify_reminders")
 
-  sessions      Session[]
   conversations Conversation[]
   exports       Export[]
   notifications Notification[]
+  reminders     Reminder[]
   apiUsageLogs  ApiUsageLog[]
   auditLogs     AuditLog[]
 
   @@index([deletedAt])
   @@map("users")
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// 2. sessions — stores refresh tokens (hashed, not raw)
-// ──────────────────────────────────────────────────────────────────────────
-
-model Session {
-  id           String   @id @default(dbgenerated("gen_random_uuid()::text"))
-  userId       String   @map("user_id")
-  refreshToken String   @unique @map("refresh_token")
-  deviceName   String?  @map("device_name")
-  deviceType   String?  @map("device_type")
-  ipAddress    String?  @map("ip_address")
-  expiresAt    DateTime @map("expires_at")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@map("sessions")
 }
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -158,6 +140,7 @@ model Conversation {
   sourceLanguage String             @map("source_language")
   targetLanguage String             @map("target_language")
   status         ConversationStatus @default(waiting)
+  isFavorite     Boolean            @default(false) @map("is_favorite")
   startedAt      DateTime?          @map("started_at")
   endedAt        DateTime?          @map("ended_at")
   createdAt      DateTime           @default(now()) @map("created_at")
@@ -320,6 +303,25 @@ model Notification {
   @@index([userId, isRead])
   @@index([createdAt])
   @@map("notifications")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 10b. reminders — a user schedules a message for a future time; a backend
+// poller fires a Notification once remindAt has passed (FR-13).
+// ──────────────────────────────────────────────────────────────────────────
+
+model Reminder {
+  id        String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  userId    String    @map("user_id")
+  message   String
+  remindAt  DateTime  @map("remind_at")
+  firedAt   DateTime? @map("fired_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("reminders")
 }
 
 // ──────────────────────────────────────────────────────────────────────────

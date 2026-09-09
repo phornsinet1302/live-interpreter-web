@@ -8,7 +8,7 @@ import { logger } from "../lib/logger";
 // here — controllers/services don't need manual try/catch.
 export function errorMiddleware(
   err: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) {
@@ -22,6 +22,18 @@ export function errorMiddleware(
   }
 
   if (err instanceof ZodError) {
+    // TEMP DEBUG — remove once the intermittent /transcribe 400s are diagnosed.
+    if (req.originalUrl.includes("/transcribe")) {
+      const body = req.body as Record<string, unknown>;
+      const safeBody = {
+        ...body,
+        audio: typeof body?.audio === "string" ? `<len=${body.audio.length}>` : body?.audio,
+      };
+      logger.error("DEBUG /transcribe validation failure", {
+        body: safeBody,
+        issues: err.issues,
+      });
+    }
     res.status(400).json({
       error: {
         message: "Validation failed",

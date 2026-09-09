@@ -23,3 +23,16 @@ export const quickTranslateSchema = z.object({
   targetLanguage: z.string().min(2).max(30),
 });
 export type QuickTranslateInput = z.infer<typeof quickTranslateSchema>;
+
+// Unauthenticated, used by the browser extension's highlight-to-translate
+// popover — a highlighted selection can run longer than a single word (up
+// to a paragraph), but nowhere near a full spoken transcript's length, so
+// this sits between quickTranslateSchema's cap and a full message.
+// sourceLanguage allows "auto" since the extension doesn't ask the user to
+// pick a source language up front.
+export const lookupSchema = z.object({
+  text: z.string().min(1).max(500),
+  sourceLanguage: z.string().min(2).max(30),
+  targetLanguage: z.string().min(2).max(30),
+});
+export type LookupInput = z.infer<typeof lookupSchema>;

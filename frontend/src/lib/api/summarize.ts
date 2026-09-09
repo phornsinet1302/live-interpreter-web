@@ -1,12 +1,20 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
 
+export interface SpeakerSummary {
+  speaker: string;
+  summary: string;
+}
+
 export interface SummaryResult {
   summary: string[];
   nextSteps: string[];
+  actionItems: string[];
+  keywords: string[];
+  speakerSummaries: SpeakerSummary[];
 }
 
 export async function summarizeConversation(
-  exchanges: { source: string; translated: string }[],
+  exchanges: { source: string; translated: string; speakerName?: string }[],
   sourceLanguage: string,
   targetLanguage: string
 ): Promise<SummaryResult> {

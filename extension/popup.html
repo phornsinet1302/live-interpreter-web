@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Fluent</title>
+    <style>
+      body {
+        width: 260px;
+        margin: 0;
+        padding: 16px;
+        background: #fdfaf4;
+        color: #1c1612;
+        font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      h1 {
+        font: italic 700 18px/1.2 Georgia, "Times New Roman", serif;
+        color: #c85a3a;
+        margin: 0 0 4px;
+      }
+      p {
+        color: #7a6f62;
+        margin: 0 0 14px;
+      }
+      label {
+        display: block;
+        font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #7a6f62;
+        margin-bottom: 6px;
+      }
+      select {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(28, 22, 18, 0.15);
+        background: #fff;
+        color: #1c1612;
+        font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        margin-bottom: 14px;
+      }
+      a.open-app {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        background: #1c1612;
+        color: #fff;
+        padding: 9px 0;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      a.open-app:hover {
+        background: #c85a3a;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Fluent</h1>
+    <p>Highlight text on any page to translate it — or right-click a selection.</p>
+    <label for="target-lang">Translate into</label>
+    <select id="target-lang"></select>
+    <a class="open-app" id="open-app" href="#" target="_blank">Open Fluent →</a>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as service from "./users.service";
 import { ApiError } from "../../utils/api-error";
-import type { UpdateProfileInput, ChangePasswordInput } from "./users.validator";
+import type { UpdateProfileInput } from "./users.validator";
 
 export async function getMe(req: Request, res: Response) {
   const user = await service.getMe(req.user!.id);
@@ -20,12 +20,6 @@ export async function updateAvatar(req: Request, res: Response) {
   }
   const user = await service.updateAvatar(req.user!.id, { filename: req.file.filename });
   res.json(user);
-}
-
-export async function updatePassword(req: Request, res: Response) {
-  const input = req.body as ChangePasswordInput;
-  await service.changePassword(req.user!.id, input);
-  res.status(204).send();
 }
 
 export async function deleteMe(req: Request, res: Response) {

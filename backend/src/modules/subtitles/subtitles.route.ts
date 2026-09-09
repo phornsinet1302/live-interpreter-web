@@ -3,7 +3,11 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import * as controller from "./subtitles.controller";
-import { createSubtitleSessionSchema, updateSubtitleSessionSchema } from "./subtitles.validator";
+import {
+  createSubtitleSessionSchema,
+  pushSubtitleTextSchema,
+  updateSubtitleSessionSchema,
+} from "./subtitles.validator";
 
 export const subtitlesRouter = Router({ mergeParams: true });
 
@@ -68,3 +72,48 @@ subtitlesRouter.post("/", validate(createSubtitleSessionSchema), controller.crea
 subtitlesRouter.get("/", controller.getById);
 subtitlesRouter.patch("/", validate(updateSubtitleSessionSchema), controller.update);
 subtitlesRouter.delete("/", controller.remove);
+
+/**
+ * @openapi
+ * /conversations/{id}/subtitles/push:
+ *   post:
+ *     tags: [Subtitles]
+ *     summary: Push a finalized caption line to whoever's watching (not persisted)
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - { name: id, in: path, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [source, translated]
+ *             properties:
+ *               source: { type: string }
+ *               translated: { type: string }
+ *               speakerName: { type: string }
+ *     responses:
+ *       202: { description: Relayed }
+ *       409: { description: No active subtitle session for this conversation }
+ */
+subtitlesRouter.post("/push", validate(pushSubtitleTextSchema), controller.push);
+
+// Mounted at /subtitles (see app.ts) — deliberately unauthenticated: a
+// second-display viewer only ever has the shareable sessionCode, not an
+// account. Exposes display settings only (see subtitles.service.getByCode).
+export const publicSubtitlesRouter = Router();
+
+/**
+ * @openapi
+ * /subtitles/{code}:
+ *   get:
+ *     tags: [Subtitles]
+ *     summary: Get a subtitle session's display settings by its shareable code (no auth)
+ *     parameters:
+ *       - { name: code, in: path, required: true, schema: { type: string } }
+ *     responses:
+ *       200: { description: Display settings }
+ *       404: { description: No subtitle session found for this code }
+ */
+publicSubtitlesRouter.get("/:code", controller.getByCode);

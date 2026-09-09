@@ -4,7 +4,7 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 import { quickSummaryLimiter } from "../../middleware/rate-limit.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import * as controller from "./summaries.controller";
-import { quickSummarySchema } from "./summaries.validator";
+import { quickSummarySchema, saveSummarySchema } from "./summaries.validator";
 
 // Mounted at /summarize (see app.ts) — deliberately unauthenticated and not
 // tied to a conversation, for the pre-signup live-translate demo. Nothing
@@ -73,5 +73,31 @@ summariesRouter.use(authMiddleware);
  *       204: { description: Deleted }
  */
 summariesRouter.post("/", controller.create);
+
+/**
+ * @openapi
+ * /conversations/{id}/summary:
+ *   put:
+ *     tags: [Summaries]
+ *     summary: Set a conversation's summary directly (no AI call) — used to persist an already-generated live summary
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - { name: id, in: path, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [summary]
+ *             properties:
+ *               summary: { type: string }
+ *               keyPoints: { type: array, items: { type: string } }
+ *               actionItems: { type: array, items: { type: string } }
+ *               keywords: { type: array, items: { type: string } }
+ *     responses:
+ *       200: { description: Summary saved }
+ */
+summariesRouter.put("/", validate(saveSummarySchema), controller.save);
 summariesRouter.get("/", controller.getById);
 summariesRouter.delete("/", controller.remove);

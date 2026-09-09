@@ -29,6 +29,12 @@ export function findById(conversationId: string, id: string) {
   return prisma.subtitleSession.findFirst({ where: { id, conversationId } });
 }
 
+// Public lookup (no ownership check) — used by the unauthenticated
+// second-display viewer, which only ever has the shareable code.
+export function findByCode(sessionCode: string) {
+  return prisma.subtitleSession.findUnique({ where: { sessionCode } });
+}
+
 export function update(
   id: string,
   data: {

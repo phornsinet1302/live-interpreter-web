@@ -7,7 +7,7 @@ import { validate } from "../../middleware/validation.middleware";
 import { env } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
 import * as controller from "./users.controller";
-import { updateProfileSchema, changePasswordSchema } from "./users.validator";
+import { updateProfileSchema } from "./users.validator";
 
 export const usersRouter = Router();
 
@@ -86,29 +86,3 @@ usersRouter.delete("/me", controller.deleteMe);
  *       200: { description: Updated user }
  */
 usersRouter.patch("/me/avatar", avatarUpload.single("avatar"), controller.updateAvatar);
-
-/**
- * @openapi
- * /users/me/password:
- *   patch:
- *     tags: [Users]
- *     summary: Change the current user's password
- *     security: [{ bearerAuth: [] }]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [newPassword]
- *             properties:
- *               currentPassword: { type: string, description: "Required unless this is a Google-only account setting a password for the first time" }
- *               newPassword: { type: string, minLength: 8 }
- *     responses:
- *       204: { description: Password changed }
- */
-usersRouter.patch(
-  "/me/password",
-  validate(changePasswordSchema),
-  controller.updatePassword
-);
