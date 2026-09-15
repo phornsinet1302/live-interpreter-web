@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Camera, Trash2 } from "lucide-react";
+import { ArrowLeft, Camera, Plus, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { UserAccount, NotificationPreferences } from "@/types";
@@ -53,10 +53,12 @@ export default function SettingsPage({
   user,
   onBack,
   onUserUpdate,
+  onGoNewSession,
 }: {
   user: UserAccount;
   onBack: () => void;
   onUserUpdate: (user: UserAccount) => void;
+  onGoNewSession: () => void;
 }) {
   const { setTheme } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,7 +222,9 @@ export default function SettingsPage({
                 className="bg-background border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors cursor-pointer"
               >
                 {LANGUAGES.map((lang) => (
-                  <option key={lang} value={lang}>{lang}</option>
+                  <option key={lang} value={lang} className="bg-background text-foreground">
+                    {lang}
+                  </option>
                 ))}
               </select>
               <p className="text-xs text-muted-foreground/70">Used as the default "speaking" language in Live Translate.</p>
@@ -231,7 +235,14 @@ export default function SettingsPage({
                 {(["light", "dark", "system"] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => setThemeChoice(t)}
+                    onClick={() => {
+                      // Applied immediately (not deferred to "Save changes")
+                      // so picking "System" — or any option — gives instant
+                      // feedback instead of silently doing nothing until the
+                      // profile is saved.
+                      setThemeChoice(t);
+                      setTheme(t);
+                    }}
                     className={`px-4 py-1.5 rounded-full text-xs font-['DM_Mono'] tracking-wide capitalize transition-colors ${
                       theme === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -340,6 +351,24 @@ export default function SettingsPage({
               ))}
             </ul>
           )}
+        </section>
+
+        {/* Tools */}
+        <section className="rounded-3xl border border-border/60 bg-card p-6 mt-8">
+          <p className="font-['Playfair_Display'] font-bold text-base text-foreground mb-2">Tools</p>
+          <p className="text-xs text-muted-foreground mb-4">Handy shortcuts for live translation.</p>
+          <button
+            onClick={onGoNewSession}
+            className="flex items-center gap-3 w-full text-left bg-secondary/40 border border-border/50 rounded-xl px-4 py-3 hover:bg-secondary/70 transition-colors"
+          >
+            <span className="w-8 h-8 rounded-full bg-accent/15 text-accent flex items-center justify-center flex-shrink-0">
+              <Plus size={15} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-foreground">New session</span>
+              <span className="block text-xs text-muted-foreground mt-0.5">Name a conversation, then start talking.</span>
+            </span>
+          </button>
         </section>
       </div>
     </div>

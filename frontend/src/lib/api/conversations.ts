@@ -15,11 +15,12 @@ async function unwrap<T>(res: Response, action: string): Promise<T> {
 
 export async function createConversation(
   sourceLanguage: string,
-  targetLanguage: string
+  targetLanguage: string,
+  title?: string
 ): Promise<BackendConversation> {
   const res = await authFetch("/conversations", {
     method: "POST",
-    body: JSON.stringify({ sourceLanguage, targetLanguage, title: "Live Translation Session" }),
+    body: JSON.stringify({ sourceLanguage, targetLanguage, title: title ?? "Live Translation Session" }),
   });
   return unwrap(res, "Create conversation");
 }
@@ -54,8 +55,6 @@ export async function createMessage(
 export interface SaveSummaryInput {
   summary: string;
   keyPoints?: string[];
-  actionItems?: string[];
-  keywords?: string[];
 }
 
 // Persists an already-computed summary as-is (e.g. the live Gemini
@@ -81,8 +80,6 @@ export async function generateSummary(conversationId: string): Promise<unknown> 
 interface BackendSummaryRow {
   summary: string;
   keyPoints: unknown;
-  actionItems: unknown;
-  keywords: unknown;
 }
 
 interface BackendConversationListItem {
@@ -115,8 +112,6 @@ function toConversationEntry(row: BackendConversationListItem): ConversationEntr
       ? {
           summary: row.summary.summary,
           keyPoints: (row.summary.keyPoints as string[] | null) ?? [],
-          actionItems: (row.summary.actionItems as { text: string }[] | null) ?? [],
-          keywords: (row.summary.keywords as string[] | null) ?? [],
         }
       : null,
   };

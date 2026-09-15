@@ -3,7 +3,7 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { validate } from "../../middleware/validation.middleware";
 import * as controller from "./speakers.controller";
-import { createSpeakerSchema, updateSpeakerSchema } from "./speakers.validator";
+import { createSpeakerSchema, identifySpeakerSchema, updateSpeakerSchema } from "./speakers.validator";
 
 export const speakersRouter = Router({ mergeParams: true });
 
@@ -64,3 +64,31 @@ speakersRouter.get("/", controller.list);
  *       200: { description: Updated speaker }
  */
 speakersRouter.patch("/:speakerId", validate(updateSpeakerSchema), controller.update);
+
+/**
+ * @openapi
+ * /conversations/{id}/speakers/identify:
+ *   post:
+ *     tags: [Speakers]
+ *     summary: Identify which speaker a voice clip belongs to (Gemini voice comparison, not biometric)
+ *     description: >
+ *       Compares the given clip's voice against speakers already identified in this
+ *       conversation. Returns an existing speaker if it's judged a match, or creates
+ *       and returns a new one (labeled "Speaker A", "B", ...) otherwise.
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - { name: id, in: path, required: true, schema: { type: string } }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [audio, mimeType]
+ *             properties:
+ *               audio: { type: string, description: "Base64-encoded audio clip" }
+ *               mimeType: { type: string, example: "audio/m4a" }
+ *     responses:
+ *       200: { description: The matched or newly-created speaker }
+ */
+speakersRouter.post("/identify", validate(identifySpeakerSchema), controller.identify);

@@ -4,63 +4,236 @@
     <meta charset="utf-8" />
     <title>Fluent</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
-        width: 260px;
+        width: 300px;
         margin: 0;
         padding: 16px;
         background: #fdfaf4;
         color: #1c1612;
         font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       }
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 4px;
+      }
       h1 {
         font: italic 700 18px/1.2 Georgia, "Times New Roman", serif;
         color: #c85a3a;
-        margin: 0 0 4px;
+        margin: 0;
       }
-      p {
+      p.tagline {
         color: #7a6f62;
-        margin: 0 0 14px;
+        margin: 0 0 16px;
       }
-      label {
+      section.languages {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .lang-field {
+        flex: 1;
+        min-width: 0;
+      }
+      .lang-field label {
         display: block;
-        font: 700 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font: 700 9px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: #7a6f62;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
+      }
+      .lang-arrow {
+        color: rgba(28, 22, 18, 0.3);
+        font-size: 13px;
+        margin-top: 14px;
+        flex-shrink: 0;
       }
       select {
         width: 100%;
-        padding: 8px 10px;
+        padding: 7px 8px;
         border-radius: 8px;
         border: 1px solid rgba(28, 22, 18, 0.15);
         background: #fff;
         color: #1c1612;
-        font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        margin-bottom: 14px;
+        font: 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      section.actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .action-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        background: #fff;
+        border: 1px solid rgba(28, 22, 18, 0.12);
+        border-radius: 12px;
+        padding: 10px 12px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .action-row:hover {
+        border-color: rgba(28, 22, 18, 0.3);
+      }
+      .action-row:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      .action-row[data-active="true"] {
+        background: #1c1612;
+        border-color: #1c1612;
+      }
+      .action-row[data-active="true"] .action-row__icon {
+        background: rgba(253, 250, 244, 0.15);
+      }
+      .action-row[data-active="true"] .action-row__title,
+      .action-row[data-active="true"] .action-row__subtitle {
+        color: #fdfaf4;
+      }
+      .action-row__icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9999px;
+        background: rgba(200, 90, 58, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+      .action-row__text {
+        min-width: 0;
+        flex: 1;
+      }
+      .action-row__title {
+        display: block;
+        font-weight: 600;
+        font-size: 12.5px;
+        color: #1c1612;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .action-row__subtitle {
+        display: block;
+        font-size: 10.5px;
+        color: #7a6f62;
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .clipboard-result {
+        background: #fff;
+        border: 1px solid rgba(28, 22, 18, 0.12);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-top: 8px;
+      }
+      .clipboard-result__source {
+        font-size: 11px;
+        color: #7a6f62;
+        margin: 0 0 4px;
+        max-height: 3.6em;
+        overflow: hidden;
+      }
+      .clipboard-result__translated {
+        font: italic 600 15px/1.35 Georgia, "Times New Roman", serif;
+        color: #c85a3a;
+        margin: 0 0 4px;
+      }
+      .clipboard-result__phonetic {
+        font: 11px/1.4 ui-monospace, "SF Mono", Consolas, monospace;
+        color: #7a6f62;
+        margin: 0 0 8px;
+      }
+      button.clipboard-result__copy {
+        background: transparent;
+        border: 1px solid rgba(28, 22, 18, 0.15);
+        border-radius: 9999px;
+        padding: 5px 12px;
+        font: 500 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #1c1612;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button.clipboard-result__copy:hover {
+        background: rgba(28, 22, 18, 0.05);
+      }
+      footer {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(28, 22, 18, 0.1);
       }
       a.open-app {
         display: block;
         text-align: center;
         text-decoration: none;
-        background: #1c1612;
-        color: #fff;
-        padding: 9px 0;
-        border-radius: 9999px;
+        color: #7a6f62;
+        font-size: 11px;
         font-weight: 600;
-        font-size: 12px;
       }
       a.open-app:hover {
-        background: #c85a3a;
+        color: #c85a3a;
       }
     </style>
   </head>
   <body>
-    <h1>Fluent</h1>
-    <p>Highlight text on any page to translate it — or right-click a selection.</p>
-    <label for="target-lang">Translate into</label>
-    <select id="target-lang"></select>
-    <a class="open-app" id="open-app" href="#" target="_blank">Open Fluent →</a>
+    <header>
+      <h1>Fluent</h1>
+    </header>
+    <p class="tagline">Highlight text on any page, or right-click a selection, to translate it instantly.</p>
+
+    <section class="languages">
+      <div class="lang-field">
+        <label for="source-lang">Speaking</label>
+        <select id="source-lang"></select>
+      </div>
+      <span class="lang-arrow">→</span>
+      <div class="lang-field">
+        <label for="target-lang">Translate into</label>
+        <select id="target-lang"></select>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button class="action-row" id="live-toggle" type="button">
+        <span class="action-row__icon">🎬</span>
+        <span class="action-row__text">
+          <span class="action-row__title">Live-interpret this tab</span>
+          <span class="action-row__subtitle" id="live-status">Captions over whatever's playing</span>
+        </span>
+      </button>
+
+      <button class="action-row" id="clipboard-translate" type="button">
+        <span class="action-row__icon">📋</span>
+        <span class="action-row__text">
+          <span class="action-row__title">Translate clipboard</span>
+          <span class="action-row__subtitle" id="clipboard-status">Whatever you last copied</span>
+        </span>
+      </button>
+    </section>
+
+    <div class="clipboard-result" id="clipboard-result" hidden>
+      <p class="clipboard-result__source" id="clipboard-source"></p>
+      <p class="clipboard-result__translated" id="clipboard-translated"></p>
+      <p class="clipboard-result__phonetic" id="clipboard-phonetic" hidden></p>
+      <button class="clipboard-result__copy" id="clipboard-copy" type="button">Copy translation</button>
+    </div>
+
+    <footer>
+      <a class="open-app" id="open-app" href="#" target="_blank">Open Fluent →</a>
+    </footer>
     <script src="popup.js"></script>
   </body>
 </html>

@@ -197,7 +197,17 @@ export async function createMessage(
   const sourceLanguage = input.sourceLanguage ?? conversation.sourceLanguage;
   const targetLanguage = input.targetLanguage ?? conversation.targetLanguage;
 
-  const result = await translateText(input.originalText, sourceLanguage, targetLanguage);
+  // If the caller already translated this text (the live-translate flow
+  // does, to show a result immediately) and is just persisting it, trust
+  // that instead of paying for + waiting on a second Gemini call for text
+  // that was already translated moments ago.
+  const result = input.translatedText
+    ? {
+        translatedText: input.translatedText,
+        provider: input.translationProvider ?? TRANSLATION_PROVIDER,
+        confidence: input.confidence ?? null,
+      }
+    : await translateText(input.originalText, sourceLanguage, targetLanguage);
 
   const message = await repo.create({
     conversationId,

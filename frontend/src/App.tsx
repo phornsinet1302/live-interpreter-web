@@ -4,6 +4,8 @@ import { useTheme } from "next-themes";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "./hooks/useAuth";
 import LiveTranslatePage from "./routes/LiveTranslate";
+import NewSessionScreen from "./routes/NewSessionScreen";
+import SessionLiveScreen from "./routes/SessionLiveScreen";
 import AboutPage from "./routes/About";
 import SignInPage from "./routes/SignIn";
 import SignUpPage from "./routes/SignUp";
@@ -21,8 +23,9 @@ export type PendingConversation = {
   exchanges: { source: string; translated: string }[];
   summary?: string[];
   nextSteps?: string[];
-  actionItems?: string[];
-  keywords?: string[];
+  // Set by the "New Session" flow (see SessionLiveScreen) to save under the
+  // name the user gave it instead of Home's default title.
+  title?: string;
 };
 
 // Mirrors a session into the real backend (Conversation + ConversationMessage
@@ -38,7 +41,7 @@ export type PendingConversation = {
 async function persistSessionToBackend(pending: PendingConversation): Promise<boolean> {
   if (pending.exchanges.length === 0) return false;
   try {
-    const conversation = await createConversation(pending.sourceLang, pending.targetLang);
+    const conversation = await createConversation(pending.sourceLang, pending.targetLang, pending.title);
     await startConversation(conversation.id);
     for (const exchange of pending.exchanges) {
       await createMessage(conversation.id, exchange.source, pending.sourceLang, pending.targetLang);
@@ -47,8 +50,6 @@ async function persistSessionToBackend(pending: PendingConversation): Promise<bo
       await saveSummary(conversation.id, {
         summary: pending.summary.join(" "),
         keyPoints: pending.summary,
-        actionItems: pending.actionItems ?? [],
-        keywords: pending.keywords ?? [],
       }).catch(() => {});
     }
     await endConversation(conversation.id);
@@ -60,7 +61,11 @@ async function persistSessionToBackend(pending: PendingConversation): Promise<bo
 }
 
 export default function App() {
-  const [page, setPage] = useState<"live" | "about" | "signin" | "signup" | "history" | "dashboard" | "settings">("about");
+  const [page, setPage] = useState<
+    "live" | "about" | "signin" | "signup" | "history" | "dashboard" | "settings" | "new-session" | "session-live"
+  >("about");
+  // Name given on NewSessionScreen, carried over to SessionLiveScreen.
+  const [sessionName, setSessionName] = useState("");
   const { user, logout, setUser } = useAuth();
   const { isSignedIn } = useClerkAuth();
   const { reduceMotion } = useMotionPrefs();
@@ -125,6 +130,7 @@ export default function App() {
           isSignedIn={!!isSignedIn}
           onSaveSession={persistSessionToBackend}
           onGoAbout={() => { setQuickStart(null); setPage("about"); }}
+          onGoNewSession={() => setPage("new-session")}
           onGoSignIn={(conv) => {
             if (conv) setPendingConversation(conv);
             setPage("signin");
@@ -172,7 +178,45 @@ export default function App() {
     }
 
     if (page === "settings" && user) {
-      return <SettingsPage user={user} onBack={() => setPage("live")} onUserUpdate={setUser} />;
+      return (
+        <SettingsPage
+          user={user}
+          onBack={() => setPage("live")}
+          onUserUpdate={setUser}
+          onGoNewSession={() => setPage("new-session")}
+        />
+      );
+    }
+
+    if (page === "new-session" && user) {
+      return (
+        <NewSessionScreen
+          onBack={() => setPage("live")}
+          onStart={(name) => {
+            setSessionName(name);
+            setPage("session-live");
+          }}
+        />
+      );
+    }
+
+    if (page === "session-live" && user) {
+      const preferredSource =
+        user.preferredLanguage && LANGUAGES.includes(user.preferredLanguage) ? user.preferredLanguage : "English";
+      return (
+        <SessionLiveScreen
+          sessionName={sessionName}
+          sourceLang={preferredSource}
+          targetLang="Khmer"
+          user={user}
+          onSaveSession={persistSessionToBackend}
+          onGoBack={() => setPage("live")}
+          onGoHistory={() => setPage("history")}
+          onGoDashboard={() => setPage("dashboard")}
+          onGoSettings={() => setPage("settings")}
+          onSignOut={handleSignOut}
+        />
+      );
     }
 
     // default: about page

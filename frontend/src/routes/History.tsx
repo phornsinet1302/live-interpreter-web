@@ -71,8 +71,7 @@ export default function HistoryPage({
       !q ||
       c.title.toLowerCase().includes(q) ||
       (c.summary?.summary ?? "").toLowerCase().includes(q) ||
-      (c.summary?.keyPoints ?? []).some((k) => k.toLowerCase().includes(q)) ||
-      (c.summary?.keywords ?? []).some((k) => k.toLowerCase().includes(q));
+      (c.summary?.keyPoints ?? []).some((k) => k.toLowerCase().includes(q));
     const matchLang = filter === "All" || c.targetLang === filter;
     const matchFavorite = !favoritesOnly || c.isFavorite;
     return matchSearch && matchLang && matchFavorite;
@@ -125,7 +124,7 @@ export default function HistoryPage({
             <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
             <input
               type="text"
-              placeholder="Search sessions, summaries, or keywords…"
+              placeholder="Search sessions or summaries…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-card border border-border rounded-full pl-10 pr-4 py-2.5 text-sm font-['DM_Sans'] text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-accent transition-colors"

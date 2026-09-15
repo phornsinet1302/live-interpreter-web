@@ -22,8 +22,6 @@ export interface UserAccount {
 export interface ConversationSummary {
 	summary: string;
 	keyPoints: string[];
-	actionItems: { text: string }[];
-	keywords: string[];
 }
 
 export interface ConversationEntry {

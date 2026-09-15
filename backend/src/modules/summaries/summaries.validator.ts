@@ -31,7 +31,5 @@ export type QuickSummaryInput = z.infer<typeof quickSummarySchema>;
 export const saveSummarySchema = z.object({
   summary: z.string().min(1).max(4000),
   keyPoints: z.array(z.string().min(1).max(500)).max(20).default([]),
-  actionItems: z.array(z.string().min(1).max(500)).max(20).default([]),
-  keywords: z.array(z.string().min(1).max(100)).max(20).default([]),
 });
 export type SaveSummaryInput = z.infer<typeof saveSummarySchema>;

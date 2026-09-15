@@ -5,6 +5,16 @@ export const createMessageSchema = z.object({
   originalText: z.string().min(1),
   sourceLanguage: z.string().min(2).max(10).optional(),
   targetLanguage: z.string().min(2).max(10).optional(),
+  // Optional: when the caller already ran transcribe+translate in one pass
+  // (the live-translate flow does, to show a result immediately) and is
+  // only calling this endpoint to persist it, passing the translation
+  // along skips a second, redundant Gemini call for text that was already
+  // translated seconds ago — that duplicate call was adding several
+  // seconds of contention/latency to whichever live segment happened to
+  // overlap it. Omit these to keep the old behavior (server translates).
+  translatedText: z.string().min(1).optional(),
+  translationProvider: z.string().optional(),
+  confidence: z.number().min(0).max(1).nullable().optional(),
 });
 export type CreateMessageInput = z.infer<typeof createMessageSchema>;
 

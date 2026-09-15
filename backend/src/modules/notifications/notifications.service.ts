@@ -4,6 +4,7 @@ import { ApiError } from "../../utils/api-error";
 import { getIO } from "../../websocket/socket";
 import { userRoom, SOCKET_EVENTS } from "../../websocket/events";
 import { toSkipTake, paginated, type PaginationQuery } from "../../utils/pagination";
+import { sendPushToToken, sendPushToTokens } from "../../lib/push";
 import type { NotificationType } from "../../lib/prisma-client";
 import type { ListNotificationsQuery } from "./notifications.validator";
 
@@ -13,7 +14,10 @@ export type NotificationPreferenceKey =
   | "notifySystemUpdates"
   | "notifyReminders";
 
-async function preferenceEnabled(userId: string, key: NotificationPreferenceKey): Promise<boolean> {
+async function preferenceAndToken(
+  userId: string,
+  key: NotificationPreferenceKey
+): Promise<{ enabled: boolean; pushToken: string | null }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -21,23 +25,28 @@ async function preferenceEnabled(userId: string, key: NotificationPreferenceKey)
       notifyTranslationCompleted: true,
       notifySystemUpdates: true,
       notifyReminders: true,
+      expoPushToken: true,
     },
   });
   // Fail open: a lookup miss shouldn't silently swallow a real notification
   // (a nonexistent user id here is a bug elsewhere, not a normal case).
-  return user ? user[key] : true;
+  if (!user) return { enabled: true, pushToken: null };
+  return { enabled: user[key], pushToken: user.expoPushToken };
 }
 
 // Central entry point for every notification the system creates (export
 // completed, translation completed, reminders — see call sites in those
-// modules) — respects the user's per-category preference (FR-12) and pushes
-// the notification live over the user's socket room (FR-13), so callers
-// don't have to duplicate (or forget) either step.
+// modules) — respects the user's per-category preference (FR-12), pushes it
+// live over the user's socket room for the app-open case (FR-13), and sends
+// an OS-level push via Expo so it still reaches the user when the app is
+// backgrounded or closed, so callers don't have to duplicate (or forget) any
+// of the three steps.
 export async function createForUser(
   userId: string,
   data: { title: string; message: string; type?: NotificationType; preferenceKey: NotificationPreferenceKey }
 ) {
-  if (!(await preferenceEnabled(userId, data.preferenceKey))) return null;
+  const { enabled, pushToken } = await preferenceAndToken(userId, data.preferenceKey);
+  if (!enabled) return null;
 
   const notification = await repo.create({
     userId,
@@ -46,6 +55,9 @@ export async function createForUser(
     type: data.type,
   });
   getIO()?.to(userRoom(userId)).emit(SOCKET_EVENTS.NOTIFICATION_NEW, notification);
+  if (pushToken) {
+    sendPushToToken(pushToken, data.title, data.message, { notificationId: notification.id }).catch(() => {});
+  }
   return notification;
 }
 
@@ -86,7 +98,7 @@ export async function remove(id: string, userId: string) {
 export async function broadcastSystemUpdate(title: string, message: string) {
   const recipients = await prisma.user.findMany({
     where: { deletedAt: null, notifySystemUpdates: true },
-    select: { id: true },
+    select: { id: true, expoPushToken: true },
   });
   if (recipients.length === 0) return { recipientCount: 0 };
 
@@ -99,6 +111,11 @@ export async function broadcastSystemUpdate(title: string, message: string) {
     for (const { id } of recipients) {
       io.to(userRoom(id)).emit(SOCKET_EVENTS.NOTIFICATION_NEW, { title, message, type: "info" });
     }
+  }
+
+  const pushTokens = recipients.map((r) => r.expoPushToken).filter((t): t is string => !!t);
+  if (pushTokens.length > 0) {
+    sendPushToTokens(pushTokens, title, message, { type: "system-update" }).catch(() => {});
   }
 
   return { recipientCount: recipients.length };

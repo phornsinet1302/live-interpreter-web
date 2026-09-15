@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as service from "./users.service";
 import { ApiError } from "../../utils/api-error";
-import type { UpdateProfileInput } from "./users.validator";
+import type { UpdateProfileInput, UpdatePushTokenInput } from "./users.validator";
 
 export async function getMe(req: Request, res: Response) {
   const user = await service.getMe(req.user!.id);
@@ -24,5 +24,11 @@ export async function updateAvatar(req: Request, res: Response) {
 
 export async function deleteMe(req: Request, res: Response) {
   await service.deleteAccount(req.user!.id);
+  res.status(204).send();
+}
+
+export async function updatePushToken(req: Request, res: Response) {
+  const { token } = req.body as UpdatePushTokenInput;
+  await service.updatePushToken(req.user!.id, token);
   res.status(204).send();
 }

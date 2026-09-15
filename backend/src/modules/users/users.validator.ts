@@ -10,3 +10,10 @@ export const updateProfileSchema = z.object({
   notifyReminders: z.boolean().optional(),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+// token is null to unregister this device (e.g. notifications toggled off,
+// or Expo failed to hand back a token) — distinct from omitting the field.
+export const updatePushTokenSchema = z.object({
+  token: z.string().min(1).nullable(),
+});
+export type UpdatePushTokenInput = z.infer<typeof updatePushTokenSchema>;

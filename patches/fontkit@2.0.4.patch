@@ -1,0 +1,26 @@
+diff --git a/dist/main.cjs b/dist/main.cjs
+index 851b2d2bbcae17e91f9f2468f61112ee2dc8fbd8..71d49820d265f17f9305d47b3ab39e91d082708e 100644
+--- a/dist/main.cjs
++++ b/dist/main.cjs
+@@ -9978,6 +9978,13 @@ class $79ea6270f0a90256$export$2e2bcd8739ae039 extends (0, $7b226e6bbeadedeb$exp
+     applyAnchor(markRecord, baseAnchor, baseGlyphIndex) {
+         let baseCoords = this.getAnchor(baseAnchor);
+         let markCoords = this.getAnchor(markRecord.markAnchor);
++        // PATCH (see patches/fontkit@2.0.4.patch): a null base/mark anchor is
++        // a valid OpenType GPOS state (some scripts, e.g. Khmer, legitimately
++        // omit an attachment point for certain base-glyph/mark-class pairs)
++        // but this function assumed it was never null and crashed reading
++        // .x off of it. Treating "no anchor" as "no adjustment" instead of
++        // throwing matches what other shaping engines (HarfBuzz) do here.
++        if (!baseCoords || !markCoords) return;
+         let basePos = this.positions[baseGlyphIndex];
+         let markPos = this.positions[this.glyphIterator.index];
+         markPos.xOffset = baseCoords.x - markCoords.x;
+@@ -9986,6 +9993,7 @@ class $79ea6270f0a90256$export$2e2bcd8739ae039 extends (0, $7b226e6bbeadedeb$exp
+     }
+     getAnchor(anchor) {
+         // TODO: contour point, device tables
++        if (!anchor) return null;
+         let x = anchor.xCoordinate;
+         let y = anchor.yCoordinate;
+         // Adjustments for font variations

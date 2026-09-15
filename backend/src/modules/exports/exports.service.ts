@@ -15,12 +15,25 @@ const EXPORTS_DIR = path.join(env.uploadsDir, "exports");
 
 // pdfkit's built-in fonts (Helvetica etc.) only cover WinAnsi/Latin-1 — any
 // other script comes out as mojibake, not just tofu. Noto Sans covers
-// Latin/Cyrillic/Greek/Vietnamese properly; Khmer/CJK/Arabic/Devanagari
-// still render as missing-glyph boxes (a real per-script font + text-shaping
-// problem, out of scope here) — those languages should use the DOCX/TXT
-// export instead, which store real Unicode text for the viewer's own fonts
+// Latin/Cyrillic/Greek/Vietnamese properly. Khmer needs its own font (Noto
+// Sans Khmer) — pdfkit renders via fontkit, which does perform the complex
+// script shaping Khmer's vowel/coeng reordering needs, so this isn't just
+// glyph substitution. CJK/Arabic/Devanagari still aren't covered by either
+// font here; those (and any other unsupported script) should still use the
+// DOCX/TXT export, which store real Unicode text for the viewer's own fonts
 // to render rather than embedding glyph outlines.
 const PDF_FONT = path.join(__dirname, "..", "..", "assets", "fonts", "NotoSans.ttf");
+const PDF_FONT_KHMER = path.join(__dirname, "..", "..", "assets", "fonts", "NotoSansKhmer.ttf");
+
+// The Khmer Unicode block (U+1780-U+17FF covers the script itself; U+19E0-
+// U+19FF is the rarely-used Khmer Symbols block for lunar-calendar marks) —
+// checked per line rather than assuming one font for the whole document,
+// since a single export mixes English/Khmer freely (original + translated
+// side by side).
+const KHMER_RANGE = /[ក-៿᧠-᧿]/;
+function pickPdfFont(text: string): string {
+  return KHMER_RANGE.test(text) ? PDF_FONT_KHMER : PDF_FONT;
+}
 
 // Shared, format-agnostic representation of an export's content — built once
 // per request from the DB bundle, then handed to whichever renderer matches
@@ -60,11 +73,10 @@ function buildSummarySection(
     throw ApiError.badRequest("This conversation has no summary to export yet");
   }
   const keyPoints = (bundle.summary.keyPoints as string[]).map((p) => `- ${p}`);
-  const keywords = (bundle.summary.keywords as string[]).join(", ");
 
   return {
     heading: "Summary",
-    paragraphs: [bundle.summary.summary, "", "Key points:", ...keyPoints, "", `Keywords: ${keywords}`],
+    paragraphs: [bundle.summary.summary, "", "Key points:", ...keyPoints],
   };
 }
 
@@ -112,18 +124,21 @@ function renderPdf(doc: ExportDocument): Promise<Buffer> {
     pdf.on("end", () => resolve(Buffer.concat(chunks)));
     pdf.on("error", reject);
 
-    // One weight for everything (see PDF_FONT comment) — headings are
-    // distinguished by size instead of a bold instance, since picking a
-    // specific weight out of a variable font isn't worth the complexity here.
-    pdf.font(PDF_FONT);
-    pdf.fontSize(20).text(doc.title);
+    // One weight per script for everything (see PDF_FONT/PDF_FONT_KHMER
+    // comments above) — headings are distinguished by size instead of a bold
+    // instance, since picking a specific weight out of a variable font isn't
+    // worth the complexity here. Font is chosen per line (not once for the
+    // whole document) so a Khmer heading/paragraph next to an English one
+    // each render in the font that actually has their glyphs.
+    pdf.font(pickPdfFont(doc.title)).fontSize(20).text(doc.title);
     pdf.moveDown();
     for (const section of doc.sections) {
-      pdf.fontSize(14).text(section.heading);
+      pdf.font(pickPdfFont(section.heading)).fontSize(14).text(section.heading);
       pdf.moveDown(0.3);
       pdf.fontSize(10);
       for (const paragraph of section.paragraphs) {
-        pdf.text(paragraph.length ? paragraph : " ");
+        const text = paragraph.length ? paragraph : " ";
+        pdf.font(pickPdfFont(text)).text(text);
       }
       pdf.moveDown();
     }

@@ -24,6 +24,10 @@ export function updateAvatarUrl(id: string, avatarUrl: string) {
   return prisma.user.update({ where: { id }, data: { avatarUrl } });
 }
 
+export function updatePushToken(id: string, expoPushToken: string | null) {
+  return prisma.user.update({ where: { id }, data: { expoPushToken } });
+}
+
 export function softDelete(id: string) {
   return prisma.user.update({ where: { id }, data: { deletedAt: new Date() } });
 }

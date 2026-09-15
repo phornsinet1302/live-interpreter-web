@@ -5,8 +5,6 @@ export const SOCKET_EVENTS = {
   CONVERSATION_LEAVE: "conversation:leave",
   CONVERSATION_STATUS: "conversation:status",
   MESSAGE_NEW: "message:new",
-  SUBTITLE_UPDATE: "subtitle:update",
-  SUBTITLE_TEXT: "subtitle:text",
   SPEAKER_UPDATE: "speaker:update",
   NOTIFICATION_NEW: "notification:new",
 } as const;

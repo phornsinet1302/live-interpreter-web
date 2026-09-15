@@ -34,7 +34,7 @@
       "matches": ["http://*/*", "https://*/*"]
     }
   ],
-  "permissions": ["contextMenus", "storage"],
+  "permissions": ["contextMenus", "storage", "tabCapture", "offscreen", "clipboardRead", "clipboardWrite"],
   "host_permissions": ["http://localhost:4000/*"],
   "browser_specific_settings": {
     "gecko": {

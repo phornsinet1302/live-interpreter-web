@@ -13,7 +13,7 @@ This describes what actually works in the repo **today**, not the target archite
 | Frontend Sign up / Sign in | **Mocked** — `setTimeout` fake delay, no call to the backend, no persisted session |
 | Frontend "Live Translate" | **Mocked** — no microphone, no OpenAI call, no websocket. Typing animation plays back a canned phrase from `DEMO_PHRASES` and returns a canned string from `DEMO_TRANSLATIONS` |
 | Frontend History | Local only — held in a Zustand store in memory, resets on page reload |
-| translations / summaries / subtitles / speakers / conversations backend modules | Not implemented (empty `.gitkeep` placeholders) |
+| translations / summaries / speakers / conversations backend modules | Not implemented (empty `.gitkeep` placeholders) |
 
 In short: the backend has a small but genuine auth API, and the frontend is a fully clickable
 visual prototype that is **not wired to it yet**. Demo them as two separate things.

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useScroll, useSpring, useTransform, type Variants } from "framer-motion";
-import { ArrowLeftRight, Mic, BrainCircuit, Gauge, Languages } from "lucide-react";
+import { ArrowLeftRight, Mic, Leaf, Recycle, Globe } from "lucide-react";
 import Navbar from "@/components/ui/layout/Navbar";
 import Footer from "@/components/ui/layout/Footer";
 import PlatformSection from "@/components/ui/features/marketing/PlatformSection";
@@ -8,6 +8,7 @@ import FeatureCard from "@/components/ui/features/marketing/FeatureCard";
 import LanguageSelect from "@/components/ui/features/translation/LanguageSelect";
 import BotanicalLeft from "@/components/ui/common/BotanicalLeft";
 import BotanicalRight from "@/components/ui/common/BotanicalRight";
+import RunningCatHero from "@/components/ui/common/RunningCatHero";
 import { useMotionPrefs } from "@/hooks/useMotionPrefs";
 import { EASE, fadeUp, revealVariants } from "@/lib/motion";
 import { UserAccount } from "@/types";
@@ -47,6 +48,10 @@ export default function AboutPage({
   const { reduceMotion, richMotionEnabled, isMobile } = useMotionPrefs();
 
   const heroRef = useRef<HTMLElement>(null);
+  // One ref per headline line, in reading order — handed to RunningCatHero
+  // so it can measure each line's real rendered text position/width and
+  // zigzag its running path across all three instead of just the last one.
+  const headlineLineRefs = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { stiffness: 60, damping: 20, mass: 0.5 });
@@ -203,34 +208,39 @@ export default function AboutPage({
               English · Khmer · Neural translation
             </motion.p>
 
-            <motion.h1
-              variants={headlineContainer}
-              initial="hidden"
-              animate="visible"
-              style={richMotionEnabled ? { x: headlineX, y: headlineY } : undefined}
-              className="font-['Playfair_Display'] font-black text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-foreground mb-5"
-            >
-              {headlineLines.map((line, i) => (
-                <span key={line} className="block overflow-hidden">
-                  <motion.span variants={lineVariant} className="block">
-                    {i === 1 ? (
-                      <>
-                        <motion.span
-                          className="text-shimmer italic inline-block"
-                          animate={reduceMotion ? undefined : { scale: [1, 1.04, 1] }}
-                          transition={reduceMotion ? undefined : { duration: 0.6, delay: 0.7, ease: EASE }}
-                        >
-                          World,
-                        </motion.span>{" "}
-                        One
-                      </>
-                    ) : (
-                      line
-                    )}
-                  </motion.span>
-                </span>
-              ))}
-            </motion.h1>
+            <div className="relative">
+              <motion.h1
+                variants={headlineContainer}
+                initial="hidden"
+                animate="visible"
+                style={richMotionEnabled ? { x: headlineX, y: headlineY } : undefined}
+                className="font-['Playfair_Display'] font-black text-5xl md:text-6xl lg:text-7xl leading-[1.65] tracking-tight text-foreground mb-5"
+              >
+                {headlineLines.map((line, i) => (
+                  <span key={line} ref={headlineLineRefs[i]} className="block overflow-hidden">
+                    <motion.span variants={lineVariant} className="block">
+                      {i === 1 ? (
+                        <>
+                          <motion.span
+                            className="text-shimmer italic inline-block"
+                            animate={reduceMotion ? undefined : { scale: [1, 1.04, 1] }}
+                            transition={reduceMotion ? undefined : { duration: 0.6, delay: 0.7, ease: EASE }}
+                          >
+                            World,
+                          </motion.span>{" "}
+                          One
+                        </>
+                      ) : (
+                        line
+                      )}
+                    </motion.span>
+                  </span>
+                ))}
+              </motion.h1>
+              {/* Purely decorative — zigzags along all three headline lines,
+                  pointer-events-none so it never blocks selecting the text. */}
+              <RunningCatHero lineRefs={headlineLineRefs} heightPx={20} paddingAbovePx={1} />
+            </div>
 
             <motion.p
               {...fadeUp({ y: 20, duration: 0.6, delay: 0.55, reduceMotion, isMobile })}
@@ -345,9 +355,9 @@ export default function AboutPage({
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {[
-              { icon: BrainCircuit, color: "bg-[#5C8A5A]", title: "Neural Accuracy", desc: "Context-aware AI that understands idioms, tone, and cultural nuance — not just words." },
-              { icon: Gauge, color: "bg-accent", title: "Instant Results", desc: "Sub-second translations for up to 5,000 characters, powered by our low-latency inference pipeline." },
-              { icon: Languages, color: "bg-[#3C6AB5]", title: "Khmer ↔ English", desc: "Purpose-built for Khmer and English, capturing tone, idiom, and cultural nuance that generic translators miss." },
+              { icon: Leaf, color: "bg-accent", title: "Neural Accuracy", desc: "Context-aware AI that understands idioms, tone, and cultural nuance — not just words." },
+              { icon: Recycle, color: "bg-accent", title: "Instant Results", desc: "Sub-second translations for up to 5,000 characters, powered by our low-latency inference pipeline." },
+              { icon: Globe, color: "bg-accent", title: "Khmer ↔ English", desc: "Purpose-built for Khmer and English, capturing tone, idiom, and cultural nuance that generic translators miss." },
             ].map((feature) => (
               <FeatureCard key={feature.title} {...feature} variants={cardVariant} />
             ))}

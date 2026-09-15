@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeftRight, CheckSquare, ChevronDown, RotateCcw, Share2, Sparkles, Star, Tag, Trash2 } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, RotateCcw, Share2, Sparkles, Star, Trash2 } from "lucide-react";
 import { ConversationEntry, ConversationMessage } from "../../../../types";
 import { getConversationMessages, generateSummary } from "@/lib/api/conversations";
 import { downloadExport, requestExport, ExportError, type ExportFormat } from "@/lib/api/exports";
-import { shareOrDownloadFile } from "@/lib/shareFile";
+import { downloadFile } from "@/lib/shareFile";
 
 function formatDuration(conv: ConversationEntry): string {
   if (conv.startedAt && conv.endedAt) {
@@ -70,8 +70,6 @@ export default function SessionCard({
       const result = (await generateSummary(conv.id)) as {
         summary: string;
         keyPoints: string[];
-        actionItems: { text: string }[];
-        keywords: string[];
       };
       onSummaryUpdate(conv.id, result);
       toast.success("Summary generated");
@@ -92,8 +90,8 @@ export default function SessionCard({
         return;
       }
       const { blob, filename } = await downloadExport(record.id, `${conv.title}.${format}`);
-      const outcome = await shareOrDownloadFile(blob, filename, { title: conv.title });
-      if (outcome !== "cancelled") toast.success(outcome === "shared" ? "Shared" : "Downloaded");
+      downloadFile(blob, filename);
+      toast.success("Downloaded");
     } catch (err) {
       toast.error(err instanceof ExportError ? err.message : "Something went wrong — please try again.");
     } finally {
@@ -244,36 +242,6 @@ export default function SessionCard({
               )}
             </div>
 
-            {conv.summary.actionItems.length > 0 && (
-              <div>
-                <p className="flex items-center gap-1.5 text-xs font-['DM_Mono'] tracking-[0.15em] uppercase text-foreground/80 font-medium mb-4">
-                  <CheckSquare size={13} /> Action items
-                </p>
-                <ul className="flex flex-col gap-2.5">
-                  {conv.summary.actionItems.map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="w-3.5 h-3.5 rounded border border-border/80 shrink-0 mt-1" />
-                      <p className="text-sm font-['DM_Sans'] text-foreground/80 leading-relaxed">{item.text}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {conv.summary.keywords.length > 0 && (
-              <div>
-                <p className="flex items-center gap-1.5 text-xs font-['DM_Mono'] tracking-[0.15em] uppercase text-foreground/80 font-medium mb-4">
-                  <Tag size={13} /> Keywords
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {conv.summary.keywords.map((keyword, i) => (
-                    <span key={i} className="text-xs text-foreground/70 bg-secondary/60 border border-border/50 rounded-full px-2.5 py-1">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </>
         ) : (
           <div className="flex items-center justify-between gap-3">

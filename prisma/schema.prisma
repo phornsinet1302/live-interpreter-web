@@ -118,6 +118,12 @@ model User {
   notifySystemUpdates        Boolean @default(true) @map("notify_system_updates")
   notifyReminders            Boolean @default(true) @map("notify_reminders")
 
+  // Expo push token for the mobile app — set when the user grants
+  // notification permission and enables push in Settings, cleared on
+  // sign-out/denial. Null means "no device to push to," not "opted out"
+  // (the notify* flags above already cover opt-out).
+  expoPushToken String? @map("expo_push_token")
+
   conversations Conversation[]
   exports       Export[]
   notifications Notification[]
@@ -196,6 +202,13 @@ model Speaker {
   displayName    String?  @map("display_name")
   confidence     Float?
   createdAt      DateTime @default(now()) @map("created_at")
+
+  // A short base64 clip of this speaker's first identified utterance within
+  // the conversation, kept only to compare future segments' voices against
+  // (Gemini-based, not a dedicated voice-biometric model — see
+  // speakers.service.ts's identifySpeaker). Never returned to clients.
+  referenceAudio         String? @map("reference_audio")
+  referenceAudioMimeType String? @map("reference_audio_mime_type")
 
   conversation Conversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   messages     ConversationMessage[]

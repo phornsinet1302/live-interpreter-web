@@ -142,6 +142,12 @@ export function useGeminiTranscription() {
     const analyser = analyserRef.current;
     if (!analyser) return;
 
+    // Some mobile browsers suspend the AudioContext when the tab/screen
+    // loses focus (screen lock, app switch) and don't auto-resume it on
+    // return — without this the analyser would silently read zeros forever
+    // after that happens, with the UI stuck on "Listening…" and no error.
+    if (audioContextRef.current?.state === "suspended") void audioContextRef.current.resume().catch(() => {});
+
     const data = new Uint8Array(analyser.fftSize);
     analyser.getByteTimeDomainData(data);
     let sumSquares = 0;
@@ -226,6 +232,17 @@ export function useGeminiTranscription() {
       manualStopRef.current = false;
       mimeTypeRef.current = pickMimeType();
 
+      // Created and resumed BEFORE the getUserMedia await, still inside the
+      // click handler's call stack: iOS Safari (and some Android WebViews)
+      // only honors AudioContext.resume() as tied to a user gesture when
+      // it's called synchronously from that gesture. Once we `await`
+      // something first, the gesture linkage is gone and resume() silently
+      // no-ops, leaving the context stuck "suspended" — the analyser then
+      // reads silence forever, VAD never fires, and the UI sits on
+      // "Listening…" with no error since nothing ever throws.
+      const audioContext = new AudioContext();
+      void audioContext.resume().catch(() => {});
+
       let stream: MediaStream;
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -238,17 +255,21 @@ export function useGeminiTranscription() {
             ? "No microphone found — check your input device and try again."
             : "Microphone access was denied — allow it in your browser settings and try again."
         );
+        void audioContext.close().catch(() => {});
         return;
       }
 
       if (manualStopRef.current) {
         stream.getTracks().forEach((track) => track.stop());
+        void audioContext.close().catch(() => {});
         return;
       }
 
+      // Belt-and-suspenders: retry the resume now that we're holding the
+      // stream, in case the earlier call raced the context's construction.
+      if (audioContext.state !== "running") void audioContext.resume().catch(() => {});
+
       streamRef.current = stream;
-      const audioContext = new AudioContext();
-      void audioContext.resume().catch(() => {});
       const source = audioContext.createMediaStreamSource(stream);
 
       // High-pass filter ahead of both the VAD tap and the recorded output —

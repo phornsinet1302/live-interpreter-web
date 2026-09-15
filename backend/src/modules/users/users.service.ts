@@ -70,3 +70,7 @@ export async function deleteAccount(userId: string) {
   await repo.softDelete(userId);
   await recordAuditLog({ userId, action: "delete_account", resource: "users" });
 }
+
+export async function updatePushToken(userId: string, token: string | null): Promise<void> {
+  await repo.updatePushToken(userId, token);
+}

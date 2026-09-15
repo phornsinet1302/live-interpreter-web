@@ -3,6 +3,10 @@ export interface CreateMessageInput {
   originalText: string;
   sourceLanguage?: string;
   targetLanguage?: string;
+  // See translations.validator.ts's createMessageSchema for why these exist.
+  translatedText?: string;
+  translationProvider?: string;
+  confidence?: number | null;
 }
 
 export interface TranslateResult {

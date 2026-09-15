@@ -26,7 +26,7 @@ live-interpreter-web/
 │   │   ├── utils/ types/ constants/
 │   │   └── modules/     #   FEATURE-FIRST, layered (see pattern below)
 │   │       ├── auth/  users/  workspaces/  conversations/
-│   │       ├── translations/ summaries/ subtitles/ speakers/
+│   │       ├── translations/ summaries/ speakers/
 │   │       └── suggestions/ exports/ notifications/ analytics/ health/
 │   └── tsconfig.json  package.json
 │

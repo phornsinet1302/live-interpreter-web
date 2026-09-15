@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
+import { API_URL } from "./utils/authFetch";
 
 export interface SpeakerSummary {
   speaker: string;
@@ -8,8 +8,6 @@ export interface SpeakerSummary {
 export interface SummaryResult {
   summary: string[];
   nextSteps: string[];
-  actionItems: string[];
-  keywords: string[];
   speakerSummaries: SpeakerSummary[];
 }
 

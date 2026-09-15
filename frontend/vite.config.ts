@@ -25,6 +25,12 @@ export default defineConfig({
   // than just the port number. Vite rewrites index.html's asset paths (and
   // everything import.meta.env.BASE_URL-aware) to match automatically.
   base: '/live-interpreter/',
+  // Binds to 0.0.0.0 (not just localhost) so a phone on the same Wi-Fi can
+  // load the dev server via the PC's LAN IP — `npm run dev` prints that
+  // "Network:" URL to use on mobile.
+  server: {
+    host: true,
+  },
   plugins: [
     figmaAssetResolver(),
     react(),

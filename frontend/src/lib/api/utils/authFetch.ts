@@ -1,4 +1,14 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/v1";
+// Falls back to whatever host the page itself was loaded from (LAN IP,
+// localhost, tunnel domain, ...) rather than a hardcoded "localhost" —
+// a hardcoded value works from the same machine as the backend but silently
+// fails on a phone, where "localhost" resolves to the phone itself. Set
+// VITE_API_URL explicitly only when the API lives on a different host than
+// the frontend (e.g. a real deployment).
+function defaultApiUrl(): string {
+  return `${window.location.protocol}//${window.location.hostname}:4000/api/v1`;
+}
+
+export const API_URL = import.meta.env.VITE_API_URL ?? defaultApiUrl();
 
 // Avatar URLs from the backend are relative (e.g. "/uploads/avatars/x.png")
 // — this strips the "/api/v1" suffix so they resolve against the bare

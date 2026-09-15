@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as service from "./speakers.service";
 import { param } from "../../utils/request";
-import type { CreateSpeakerInput, UpdateSpeakerInput } from "./speakers.validator";
+import type { CreateSpeakerInput, IdentifySpeakerInput, UpdateSpeakerInput } from "./speakers.validator";
 
 export async function create(req: Request, res: Response) {
   const input = req.body as CreateSpeakerInput;
@@ -22,5 +22,11 @@ export async function update(req: Request, res: Response) {
     req.user!.id,
     input
   );
+  res.json(speaker);
+}
+
+export async function identify(req: Request, res: Response) {
+  const input = req.body as IdentifySpeakerInput;
+  const speaker = await service.identifySpeaker(param(req, "id"), req.user!.id, input);
   res.json(speaker);
 }

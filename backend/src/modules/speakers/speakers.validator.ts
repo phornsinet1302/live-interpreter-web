@@ -11,3 +11,9 @@ export const updateSpeakerSchema = z.object({
   displayName: z.string().min(1).max(100).optional(),
 });
 export type UpdateSpeakerInput = z.infer<typeof updateSpeakerSchema>;
+
+export const identifySpeakerSchema = z.object({
+  audio: z.string().min(1),
+  mimeType: z.string().min(1),
+});
+export type IdentifySpeakerInput = z.infer<typeof identifySpeakerSchema>;

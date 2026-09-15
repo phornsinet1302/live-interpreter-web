@@ -1,9 +1,14 @@
 import rateLimit from "express-rate-limit";
 
-// Applied globally to /api/v1.
+// Applied globally to /api/v1. 300 (20/min avg) turned out too tight for
+// real usage — a single live-translate session alone can fire 3 requests per
+// spoken sentence (transcribe + conversation create/end + message save), on
+// top of Analytics firing 5 requests per screen open and routine navigation
+// (History, Notifications, Settings). Raised so normal heavy use doesn't
+// trip it; per-route limiters below still guard the expensive endpoints.
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 300,
+  limit: 1500,
   standardHeaders: true,
   legacyHeaders: false,
 });

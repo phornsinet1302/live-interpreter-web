@@ -7,7 +7,7 @@ import { validate } from "../../middleware/validation.middleware";
 import { env } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
 import * as controller from "./users.controller";
-import { updateProfileSchema } from "./users.validator";
+import { updateProfileSchema, updatePushTokenSchema } from "./users.validator";
 
 export const usersRouter = Router();
 
@@ -86,3 +86,28 @@ usersRouter.delete("/me", controller.deleteMe);
  *       200: { description: Updated user }
  */
 usersRouter.patch("/me/avatar", avatarUpload.single("avatar"), controller.updateAvatar);
+
+/**
+ * @openapi
+ * /users/me/push-token:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Register or clear this device's Expo push token
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token: { type: string, nullable: true }
+ *     responses:
+ *       204: { description: Saved }
+ */
+usersRouter.patch(
+  "/me/push-token",
+  validate(updatePushTokenSchema),
+  controller.updatePushToken
+);

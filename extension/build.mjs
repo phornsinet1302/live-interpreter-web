@@ -14,6 +14,7 @@ await build({
     path.join(root, "src/background.ts"),
     path.join(root, "src/content.ts"),
     path.join(root, "src/popup.ts"),
+    path.join(root, "src/offscreen.ts"),
   ],
   outdir: dist,
   bundle: true,
@@ -30,6 +31,7 @@ await build({
 
 cpSync(path.join(root, "manifest.json"), path.join(dist, "manifest.json"));
 cpSync(path.join(root, "popup.html"), path.join(dist, "popup.html"));
+cpSync(path.join(root, "src/offscreen.html"), path.join(dist, "offscreen.html"));
 cpSync(path.join(root, "src/popover.css"), path.join(dist, "popover.css"));
 if (existsSync(path.join(root, "icons"))) {
   cpSync(path.join(root, "icons"), path.join(dist, "icons"), { recursive: true });

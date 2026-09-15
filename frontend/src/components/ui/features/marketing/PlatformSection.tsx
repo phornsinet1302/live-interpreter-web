@@ -6,12 +6,14 @@ import Logo from "@/components/ui/common/Logo";
 import MagneticButton from "@/components/ui/common/MagneticButton";
 import { useMotionPrefs } from "@/hooks/useMotionPrefs";
 import { EASE } from "@/lib/motion";
+import ExtensionInstallModal, { type ExtensionBrowser } from "./ExtensionInstallModal";
 
 const ctaClasses =
   "outline-none focus-visible:ring-2 focus-visible:ring-accent/50 transition-[background-color,box-shadow,filter] duration-[250ms] hover:shadow-md hover:brightness-105";
 
 export default function PlatformSection() {
   const [activeTab, setActiveTab] = useState<"web" | "app" | "extension">("web");
+  const [installModal, setInstallModal] = useState<ExtensionBrowser | null>(null);
   const { reduceMotion, isMobile } = useMotionPrefs();
   const half = isMobile ? 0.5 : 1;
   const tabs = [
@@ -102,11 +104,11 @@ export default function PlatformSection() {
                 {activeTab === tab.id && (
                   <motion.span
                     layoutId="platform-tab-pill"
-                    className="absolute inset-0 bg-primary rounded-full shadow-sm"
+                    className="absolute inset-0 bg-accent rounded-full shadow-sm"
                     transition={reduceMotion ? { duration: 0.15 } : { type: "spring", stiffness: 350, damping: 32 }}
                   />
                 )}
-                <span className={`relative z-10 transition-colors duration-[250ms] ${activeTab === tab.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                <span className={`relative z-10 transition-colors duration-[250ms] ${activeTab === tab.id ? "text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}>
                   {tab.label}
                 </span>
               </button>
@@ -125,7 +127,7 @@ export default function PlatformSection() {
             {activeTab === "web" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div>
-                  <motion.div initial="hidden" animate="visible" variants={iconVariant} className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center mb-5">
+                  <motion.div initial="hidden" animate="visible" variants={iconVariant} className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-5">
                     <Globe size={20} className="text-primary-foreground" />
                   </motion.div>
                   <h3 className="font-['Playfair_Display'] font-black text-2xl md:text-3xl leading-tight tracking-tight mb-3">
@@ -237,17 +239,17 @@ export default function PlatformSection() {
             {activeTab === "extension" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <div>
-                  <motion.div initial="hidden" animate="visible" variants={iconVariant} className="w-11 h-11 rounded-xl bg-[#3C6AB5] flex items-center justify-center mb-5">
+                  <motion.div initial="hidden" animate="visible" variants={iconVariant} className="w-11 h-11 rounded-xl bg-accent flex items-center justify-center mb-5">
                     <PanelsTopLeft size={20} className="text-white" />
                   </motion.div>
                   <h3 className="font-['Playfair_Display'] font-black text-2xl md:text-3xl leading-tight tracking-tight mb-3">
-                    Translate any<br />page, instantly.
+                    Translate any page —<br />live-interpret any video.
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed mb-6 max-w-sm">
-                    The Fluent browser extension lets you highlight any text on any webpage and get an instant translation in a clean popover — no switching tabs.
+                    The Fluent browser extension lets you highlight any text on any webpage for an instant translation, or live-interpret whatever video or audio is playing in the tab — real translated captions, right where you're watching.
                   </p>
                   <motion.ul initial="hidden" animate="visible" variants={listContainer} className="space-y-2.5 mb-8">
-                    {["Highlight-to-translate on any page", "Right-click context menu", "Popover with phonetics & examples", "Chrome, Firefox & Edge"].map((item) => (
+                    {["Live-interpret any video or audio playing in a tab", "Highlight-to-translate on any page", "Right-click context menu", "Popover with phonetics & examples", "Chrome, Firefox & Edge"].map((item) => (
                       <motion.li key={item} variants={listItem} className="flex items-center gap-2.5 text-sm text-foreground/90">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#3C6AB5] flex-shrink-0" />
                         {item}
@@ -255,16 +257,26 @@ export default function PlatformSection() {
                     ))}
                   </motion.ul>
                   <div className="flex flex-wrap items-center gap-3">
-                    <MagneticButton magneticStrength={0.15} className={`bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-accent flex items-center gap-2 ${ctaClasses}`}>
+                    <button
+                      onClick={() => setInstallModal("chrome")}
+                      className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:border-accent hover:-translate-y-0.5 flex items-center gap-2 ${ctaClasses}`}
+                    >
                       <Chrome size={15} /> Add to Chrome
-                    </MagneticButton>
-                    <button className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-secondary hover:-translate-y-0.5 ${ctaClasses}`}>
+                    </button>
+                    <button
+                      onClick={() => setInstallModal("firefox")}
+                      className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:border-accent hover:-translate-y-0.5 ${ctaClasses}`}
+                    >
                       Firefox Add-on
                     </button>
-                    <button className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-secondary hover:-translate-y-0.5 ${ctaClasses}`}>
+                    <button
+                      onClick={() => setInstallModal("edge")}
+                      className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-accent hover:text-accent-foreground hover:border-accent hover:-translate-y-0.5 ${ctaClasses}`}
+                    >
                       Edge Extension
                     </button>
                   </div>
+                  <p className="text-xs text-muted-foreground/70 mt-3">Not in the extension stores yet — click a button above for quick manual install steps.</p>
                 </div>
                 <motion.div
                   initial={mockupInitial}
@@ -311,6 +323,7 @@ export default function PlatformSection() {
           </motion.div>
         </AnimatePresence>
       </div>
+      {installModal && <ExtensionInstallModal browser={installModal} onClose={() => setInstallModal(null)} />}
     </section>
   );
 }

@@ -93,8 +93,6 @@ summariesRouter.post("/", controller.create);
  *             properties:
  *               summary: { type: string }
  *               keyPoints: { type: array, items: { type: string } }
- *               actionItems: { type: array, items: { type: string } }
- *               keywords: { type: array, items: { type: string } }
  *     responses:
  *       200: { description: Summary saved }
  */
