@@ -14,7 +14,7 @@ const openApp = document.getElementById("open-app") as HTMLAnchorElement;
 const liveToggle = document.getElementById("live-toggle") as HTMLButtonElement;
 const liveTitle = liveToggle.querySelector(".action-row__title") as HTMLElement;
 const liveStatus = document.getElementById("live-status") as HTMLElement;
-const LIVE_IDLE_SUBTITLE = "Captions over whatever's playing";
+const LIVE_IDLE_SUBTITLE = "Live-interpret whatever video/audio is playing in this tab.";
 
 openApp.href = WEB_APP_URL;
 
@@ -50,7 +50,7 @@ async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
 
 function setToggleState(active: boolean) {
   liveToggle.dataset.active = String(active);
-  liveTitle.textContent = active ? "Stop live interpreting" : "Live-interpret this tab";
+  liveTitle.textContent = active ? "Stop live interpreting" : "Start live interpreting this tab";
   liveStatus.textContent = active ? "Listening to this tab's audio…" : LIVE_IDLE_SUBTITLE;
 }
 
@@ -129,7 +129,7 @@ type LookupOutcome = { ok: true; result: LookupResult } | { ok: false; error: st
 
 const clipboardBtn = document.getElementById("clipboard-translate") as HTMLButtonElement;
 const clipboardStatus = document.getElementById("clipboard-status") as HTMLElement;
-const CLIPBOARD_IDLE_SUBTITLE = "Whatever you last copied";
+const CLIPBOARD_IDLE_SUBTITLE = "Translate whatever's on your clipboard right now.";
 const clipboardResultEl = document.getElementById("clipboard-result") as HTMLDivElement;
 const clipboardSourceEl = document.getElementById("clipboard-source") as HTMLParagraphElement;
 const clipboardTranslatedEl = document.getElementById("clipboard-translated") as HTMLParagraphElement;

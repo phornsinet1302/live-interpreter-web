@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { Globe, Smartphone, PanelsTopLeft, Apple, Play, Chrome, Copy, Volume2 } from "lucide-react";
-import QRCode from "@/components/ui/common/QRCode";
+import { Globe, Smartphone, PanelsTopLeft, Play, Chrome, Copy, Volume2 } from "lucide-react";
 import Logo from "@/components/ui/common/Logo";
 import MagneticButton from "@/components/ui/common/MagneticButton";
 import { useMotionPrefs } from "@/hooks/useMotionPrefs";
@@ -137,7 +136,7 @@ export default function PlatformSection() {
                     Access the complete Fluent suite from any browser. Type, paste, or speak — your translation history syncs across all devices when signed in.
                   </p>
                   <motion.ul initial="hidden" animate="visible" variants={listContainer} className="space-y-2.5 mb-8">
-                    {["Text & voice translation", "English ↔ Khmer", "Saved translation history", "Works on any device"].map((item) => (
+                    {["Text & voice translation", "14 languages supported", "Saved translation history", "Works on any device"].map((item) => (
                       <motion.li key={item} variants={listItem} className="flex items-center gap-2.5 text-sm text-foreground/90">
                         <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                         {item}
@@ -207,9 +206,6 @@ export default function PlatformSection() {
                     ))}
                   </motion.ul>
                   <div className="flex items-center gap-3">
-                    <MagneticButton magneticStrength={0.15} className={`bg-primary text-primary-foreground px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-accent flex items-center gap-2 ${ctaClasses}`}>
-                      <Apple size={15} /> App Store
-                    </MagneticButton>
                     <button className={`border border-border text-foreground px-5 py-2.5 rounded-full text-sm font-medium hover:bg-secondary hover:-translate-y-0.5 flex items-center gap-2 ${ctaClasses}`}>
                       <Play size={13} /> Google Play
                     </button>
@@ -224,7 +220,7 @@ export default function PlatformSection() {
                 >
                   <p className="text-[10px] font-['DM_Mono'] tracking-[0.2em] uppercase text-muted-foreground mb-5">Scan to download</p>
                   <div className="bg-white p-3 rounded-xl border border-border mb-5">
-                    <QRCode size={140} />
+                    <img src={`${import.meta.env.BASE_URL}qr-mobile-download.png`} alt="QR code to download the mobile app" width={140} height={140} />
                   </div>
                   <div className="w-full border-t border-border pt-4 mt-1">
                     <p className="text-xs text-muted-foreground mb-2">iOS & Android</p>

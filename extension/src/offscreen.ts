@@ -75,7 +75,7 @@ async function sendSegment(blob: Blob, blobMimeType: string) {
     tabId: currentTabId,
     audioBase64,
     mimeType: blobMimeType,
-  });
+  }).catch(() => {});
 }
 
 function startRecorder() {
@@ -167,7 +167,7 @@ async function start(streamId: string, tabId: number) {
       type: "FLUENT_OFFSCREEN_ERROR",
       tabId,
       error: error instanceof Error ? error.message : String(error),
-    });
+    }).catch(() => {});
     return;
   }
 

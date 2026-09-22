@@ -205,7 +205,7 @@ export default function AboutPage({
               {...fadeUp({ y: 15, duration: 0.5, reduceMotion, isMobile })}
               className="text-xs font-['DM_Mono'] tracking-[0.2em] uppercase text-accent mb-4"
             >
-              English · Khmer · Neural translation
+              14 Languages · Neural translation
             </motion.p>
 
             <div className="relative">
@@ -357,7 +357,7 @@ export default function AboutPage({
             {[
               { icon: Leaf, color: "bg-accent", title: "Neural Accuracy", desc: "Context-aware AI that understands idioms, tone, and cultural nuance — not just words." },
               { icon: Recycle, color: "bg-accent", title: "Instant Results", desc: "Sub-second translations for up to 5,000 characters, powered by our low-latency inference pipeline." },
-              { icon: Globe, color: "bg-accent", title: "Khmer ↔ English", desc: "Purpose-built for Khmer and English, capturing tone, idiom, and cultural nuance that generic translators miss." },
+              { icon: Globe, color: "bg-accent", title: "14 Languages", desc: "From Khmer to Japanese, Arabic to Spanish — built to capture tone, idiom, and cultural nuance that generic translators miss." },
             ].map((feature) => (
               <FeatureCard key={feature.title} {...feature} variants={cardVariant} />
             ))}

@@ -118,7 +118,7 @@ async function stopTabCapture(): Promise<void> {
   const tabId = activeCaptureTabId;
   activeCaptureTabId = null;
   if (await chrome.offscreen.hasDocument()) {
-    chrome.runtime.sendMessage({ type: "FLUENT_OFFSCREEN_STOP" });
+    chrome.runtime.sendMessage({ type: "FLUENT_OFFSCREEN_STOP" }).catch(() => {});
   }
   await closeOffscreenDocumentIfOpen();
   if (tabId !== null) {
@@ -161,7 +161,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       activeSourceLanguage = sourceLanguage;
       activeTargetLanguage = targetLanguage;
       await ensureOffscreenDocument();
-      chrome.runtime.sendMessage({ type: "FLUENT_OFFSCREEN_START", streamId, tabId });
+      chrome.runtime.sendMessage({ type: "FLUENT_OFFSCREEN_START", streamId, tabId }).catch(() => {});
       chrome.tabs.sendMessage(tabId, { type: "FLUENT_TAB_CAPTURE_STARTED" }).catch(() => {});
       sendResponse({ ok: true });
     })();

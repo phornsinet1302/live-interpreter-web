@@ -80,7 +80,7 @@ export default function ExtensionInstallModal({
         </ol>
         {info.note && <p className="text-xs text-muted-foreground leading-relaxed mb-6">{info.note}</p>}
         <a
-          href="/fluent-extension.zip"
+          href={`${import.meta.env.BASE_URL}fluent-extension.zip`}
           download
           className="w-full bg-primary text-primary-foreground py-3.5 rounded-full text-sm font-semibold hover:bg-accent transition-colors duration-200 flex items-center justify-center gap-2"
         >
