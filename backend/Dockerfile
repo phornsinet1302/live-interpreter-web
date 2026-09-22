@@ -15,6 +15,10 @@ FROM base AS deps
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY backend/package.json ./backend/package.json
 COPY frontend/package.json ./frontend/package.json
+# patchedDependencies (pnpm-workspace.yaml) points at this dir — pnpm reads
+# the actual patch file to verify its hash against the lockfile, so it has to
+# be present before install, not just declared.
+COPY patches ./patches
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
