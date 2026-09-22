@@ -2,6 +2,7 @@
   "name": "live-interpreter",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.27.1",
   "scripts": {
     "dev": "pnpm --parallel --filter frontend --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
