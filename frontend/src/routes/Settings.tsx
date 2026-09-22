@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { UserAccount, NotificationPreferences } from "@/types";
 import Logo from "@/components/ui/common/Logo";
 import { LANGUAGES } from "@/lib/api/utils/constant";
-import { backendOrigin } from "@/lib/api/utils/authFetch";
+import { avatarSrc as resolveAvatarSrc } from "@/lib/api/utils/authFetch";
 import { updateProfile, uploadAvatar, type UpdateProfileInput } from "@/lib/api/users";
 import { createReminder, cancelReminder, listReminders, ReminderError, type ReminderItem } from "@/lib/api/reminders";
 
@@ -153,7 +153,7 @@ export default function SettingsPage({
     await cancelReminder(id).catch(() => {});
   };
 
-  const avatarSrc = user.avatarUrl ? `${backendOrigin()}${user.avatarUrl}` : null;
+  const avatarSrc = resolveAvatarSrc(user.avatarUrl);
   const initials = name.split(" ").filter(Boolean).map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
 
   return (

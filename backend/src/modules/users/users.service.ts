@@ -1,8 +1,5 @@
-import path from "node:path";
-import { unlink } from "node:fs/promises";
 import * as repo from "./users.repository";
-import { env } from "../../config/env";
-import { logger } from "../../lib/logger";
+import { uploadAvatar } from "../../lib/cloudinary";
 import { ApiError } from "../../utils/api-error";
 import { recordAuditLog } from "../../utils/audit-log";
 import type { User, UserTheme } from "../../lib/prisma-client";
@@ -49,19 +46,13 @@ export async function updateProfile(
   return toPublicUser(user);
 }
 
-export async function updateAvatar(
-  userId: string,
-  file: { filename: string }
-): Promise<PublicUser> {
+export async function updateAvatar(userId: string, fileBuffer: Buffer): Promise<PublicUser> {
   const current = await repo.findActiveUserById(userId);
   if (!current) throw ApiError.notFound("User not found");
 
-  if (current.avatarUrl) {
-    const oldPath = path.join(env.uploadsDir, "avatars", path.basename(current.avatarUrl));
-    unlink(oldPath).catch((error) => logger.warn("Failed to remove old avatar", error));
-  }
-
-  const avatarUrl = `/uploads/avatars/${file.filename}`;
+  // Deterministic public_id (see lib/cloudinary.ts) means this overwrites
+  // the user's existing avatar in place — no separate delete-the-old-one step.
+  const avatarUrl = await uploadAvatar(userId, fileBuffer);
   const user = await repo.updateAvatarUrl(userId, avatarUrl);
   return toPublicUser(user);
 }

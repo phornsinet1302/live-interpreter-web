@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronDown, History, LayoutDashboard, User, LogOut } from "lucide-react";
 import { UserAccount } from "@/types";
-import { backendOrigin } from "@/lib/api/utils/authFetch";
+import { avatarSrc as resolveAvatarSrc } from "@/lib/api/utils/authFetch";
 
 export default function UserNav({
   user,
@@ -28,7 +28,7 @@ export default function UserNav({
   }, []);
 
   const initials = user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
-  const avatarSrc = user.avatarUrl ? `${backendOrigin()}${user.avatarUrl}` : null;
+  const avatarSrc = resolveAvatarSrc(user.avatarUrl);
 
   return (
     <div className="relative" ref={ref}>

@@ -1,10 +1,8 @@
 // HTTP routes -> maps URLs to controller methods. No business logic here.
 import { Router } from "express";
 import multer from "multer";
-import path from "node:path";
 import { authMiddleware } from "../../middleware/auth.middleware";
 import { validate } from "../../middleware/validation.middleware";
-import { env } from "../../config/env";
 import { ApiError } from "../../utils/api-error";
 import * as controller from "./users.controller";
 import { updateProfileSchema, updatePushTokenSchema } from "./users.validator";
@@ -13,14 +11,11 @@ export const usersRouter = Router();
 
 usersRouter.use(authMiddleware);
 
+// Memory storage, not disk — the file goes straight to Cloudinary (see
+// users.service.ts) rather than to local disk, which on Render (and most
+// PaaS hosts) is wiped on every redeploy/restart.
 const avatarUpload = multer({
-  storage: multer.diskStorage({
-    destination: path.join(env.uploadsDir, "avatars"),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, `${req.user!.id}-${Date.now()}${ext}`);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {

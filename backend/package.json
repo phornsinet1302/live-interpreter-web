@@ -16,6 +16,7 @@
     "@clerk/express": "^2.1.66",
     "@google/genai": "^2.13.0",
     "@prisma/client": "^6",
+    "cloudinary": "^2.11.0",
     "cors": "^2",
     "docx": "^9.7.1",
     "expo-server-sdk": "^7.2.0",

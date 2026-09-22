@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { UserAccount } from "@/types";
 import Logo from "@/components/ui/common/Logo";
-import { backendOrigin } from "@/lib/api/utils/authFetch";
+import { avatarSrc } from "@/lib/api/utils/authFetch";
 import {
   getDashboardStats,
   getHistoryUsage,
@@ -174,7 +174,7 @@ export default function DashboardPage({
           </button>
           <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-['DM_Mono'] overflow-hidden">
             {user.avatarUrl ? (
-              <img src={`${backendOrigin()}${user.avatarUrl}`} alt="" className="w-full h-full object-cover" />
+              <img src={avatarSrc(user.avatarUrl) ?? undefined} alt="" className="w-full h-full object-cover" />
             ) : (
               user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
             )}

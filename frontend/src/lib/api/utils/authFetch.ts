@@ -10,11 +10,19 @@ function defaultApiUrl(): string {
 
 export const API_URL = import.meta.env.VITE_API_URL ?? defaultApiUrl();
 
-// Avatar URLs from the backend are relative (e.g. "/uploads/avatars/x.png")
-// — this strips the "/api/v1" suffix so they resolve against the bare
-// backend origin instead of the API path.
+// Legacy avatar URLs from the backend were relative (e.g.
+// "/uploads/avatars/x.png") — this strips the "/api/v1" suffix so they
+// resolve against the bare backend origin instead of the API path.
 export function backendOrigin(): string {
   return API_URL.replace(/\/api\/v1\/?$/, "");
+}
+
+// Avatars now upload to Cloudinary (see backend lib/cloudinary.ts), which
+// returns an absolute https:// URL — used as-is. Falls back to prefixing
+// backendOrigin() for any pre-Cloudinary relative URL still in the DB.
+export function avatarSrc(avatarUrl: string | null): string | null {
+  if (!avatarUrl) return null;
+  return /^https?:\/\//.test(avatarUrl) ? avatarUrl : `${backendOrigin()}${avatarUrl}`;
 }
 
 // Clerk's getToken() is only available from the useAuth() hook inside React

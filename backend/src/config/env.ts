@@ -37,4 +37,13 @@ export const env = {
     .filter(Boolean),
 
   uploadsDir: path.join(__dirname, "..", "..", "uploads"),
+
+  // Avatar storage — optional like openaiApiKey/googleApiKey above (checked
+  // lazily at upload time, not required() here) so the app still boots
+  // without it configured; only the avatar upload endpoint fails until it is.
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 } as const;

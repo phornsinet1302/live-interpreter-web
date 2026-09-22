@@ -18,7 +18,7 @@ export async function updateAvatar(req: Request, res: Response) {
   if (!req.file) {
     throw ApiError.badRequest("No file uploaded");
   }
-  const user = await service.updateAvatar(req.user!.id, { filename: req.file.filename });
+  const user = await service.updateAvatar(req.user!.id, req.file.buffer);
   res.json(user);
 }
 
