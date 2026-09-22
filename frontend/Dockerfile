@@ -2,7 +2,10 @@
 # docker-compose.yml points at this file with `context: .`
 
 FROM node:20-alpine AS base
-RUN corepack enable && corepack prepare pnpm@9 --activate
+# See backend/Dockerfile's comment on this pin — pnpm 9 silently drops
+# pnpm-workspace.yaml's patchedDependencies (a v10+ setting); 11 is the
+# oldest version confirmed to apply patches/fontkit@2.0.4.patch correctly.
+RUN corepack enable && corepack prepare pnpm@11 --activate
 WORKDIR /app
 
 # ── Install dependencies ─────────────────────────────────────────────
