@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: live-interpreter-backend
+    name: live-interpreter-back
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
