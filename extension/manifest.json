@@ -35,7 +35,7 @@
     }
   ],
   "permissions": ["contextMenus", "storage", "tabCapture", "offscreen", "clipboardRead", "clipboardWrite"],
-  "host_permissions": ["http://localhost:4000/*"],
+  "host_permissions": ["https://live-interpreter-back.onrender.com/*"],
   "browser_specific_settings": {
     "gecko": {
       "id": "fluent-translate@example.com",

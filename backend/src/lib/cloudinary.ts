@@ -92,14 +92,18 @@ export async function deleteExportFile(exportId: string, format: string): Promis
     });
 }
 
-// fl_attachment:<filename> makes Cloudinary serve the raw file with a
-// Content-Disposition that names it after the conversation rather than the
-// public_id, without us having to proxy the bytes through this server.
-export function exportDownloadUrl(exportId: string, format: string, filename: string): string {
+// Plain (untransformed) delivery URL — the SDK's fl_attachment:<filename>
+// flag looked like the simpler way to get a friendly download name, but it
+// kept rejecting otherwise-valid filenames with "Invalid flag in
+// transformation" (likely the colon inside the flag value getting escaped by
+// the SDK's own URL builder in a way Cloudinary's server then rejects).
+// exports.controller.ts fetches this URL itself and sets its own
+// Content-Disposition instead, sidestepping the transformation-string syntax
+// entirely.
+export function exportRawUrl(exportId: string, format: string): string {
   return cloudinary.url(exportPublicId(exportId, format), {
     resource_type: "raw",
     type: "upload",
-    flags: `attachment:${filename}`,
     sign_url: false,
   });
 }

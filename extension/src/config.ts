@@ -1,9 +1,12 @@
-// Points at the local dev backend — update before publishing anywhere real
-// (and add that origin to manifest.json's host_permissions; MV3 requires an
-// explicit host, "<all_urls>" would trigger a much scarier install prompt
-// for no benefit here since we only ever call our own API).
-export const API_URL = "http://localhost:4000/api/v1";
-export const WEB_APP_URL = "http://localhost:5173";
+// Points at the deployed backend/frontend — switch back to the localhost
+// values below for local dev (and manifest.json's host_permissions must list
+// whichever origin is active here; MV3 requires an explicit host,
+// "<all_urls>" would trigger a much scarier install prompt for no benefit
+// here since we only ever call our own API).
+// const API_URL = "http://localhost:4000/api/v1";
+// const WEB_APP_URL = "http://localhost:5173";
+export const API_URL = "https://live-interpreter-back.onrender.com/api/v1";
+export const WEB_APP_URL = "https://live-interpreter-web-frontend-7hjn-sinets-projects-30d360df.vercel.app";
 
 // Mirrors frontend/src/lib/api/utils/constant.ts's LANGUAGES/LANGUAGE_SPEECH_CODES —
 // duplicated rather than imported so this package builds independently of

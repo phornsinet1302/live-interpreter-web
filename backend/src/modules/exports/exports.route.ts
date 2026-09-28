@@ -73,7 +73,7 @@ exportsRouter.delete("/:id", controller.remove);
  *     parameters:
  *       - { name: id, in: path, required: true, schema: { type: string } }
  *     responses:
- *       302: { description: Redirect to the file's download URL }
+ *       200: { description: File stream }
  *       409: { description: Export not ready for download }
  */
 exportsRouter.get("/:id/download", controller.download);

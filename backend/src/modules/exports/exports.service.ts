@@ -4,7 +4,7 @@ import { Document, Packer, Paragraph, HeadingLevel } from "docx";
 import * as repo from "./exports.repository";
 import * as notificationsService from "../notifications/notifications.service";
 import { getConversationForOwner } from "../conversations/conversations.service";
-import { uploadExportFile, deleteExportFile, exportDownloadUrl } from "../../lib/cloudinary";
+import { uploadExportFile, deleteExportFile, exportRawUrl } from "../../lib/cloudinary";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
 import type { Export, ExportType } from "../../lib/prisma-client";
@@ -218,7 +218,19 @@ export async function deleteExport(id: string, userId: string) {
   await repo.remove(id);
 }
 
-export async function getDownloadUrl(id: string, userId: string): Promise<string> {
+const CONTENT_TYPES: Record<string, string> = {
+  pdf: "application/pdf",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  txt: "text/plain; charset=utf-8",
+};
+
+export interface DownloadTarget {
+  url: string;
+  filename: string;
+  contentType: string;
+}
+
+export async function getDownloadTarget(id: string, userId: string): Promise<DownloadTarget> {
   const record = await getExport(id, userId);
   if (record.status !== "completed" || !record.fileUrl) {
     throw ApiError.conflict("This export is not ready for download");
@@ -227,14 +239,14 @@ export async function getDownloadUrl(id: string, userId: string): Promise<string
   // Best-effort friendly filename — falls back to a generic one if the
   // conversation was deleted out from under a still-existing export record.
   const conversation = await getConversationForOwner(record.conversationId, userId).catch(() => null);
-  // Embedded directly into a Cloudinary fl_attachment:<filename> transformation
-  // flag below — spaces/commas/colons there break the transformation string
-  // (Cloudinary rejects the whole URL with "Invalid flag in transformation"),
-  // so this must be stricter than a normal filename sanitizer.
   const baseName =
     (conversation?.title ?? "conversation").replace(/[^\w-]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "") ||
     "conversation";
   const filename = `${baseName}-${record.type}.${record.fileUrl}`;
 
-  return exportDownloadUrl(record.id, record.fileUrl, filename);
+  return {
+    url: exportRawUrl(record.id, record.fileUrl),
+    filename,
+    contentType: CONTENT_TYPES[record.fileUrl] ?? "application/octet-stream",
+  };
 }
