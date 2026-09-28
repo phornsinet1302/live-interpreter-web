@@ -105,6 +105,10 @@ let activeCaptureTabId: number | null = null;
 let activeSourceLanguage = DEFAULT_TARGET_LANGUAGE;
 let activeTargetLanguage = DEFAULT_TARGET_LANGUAGE;
 
+// See the FLUENT_TAB_SEGMENT_READY handler below for why this exists.
+const MIN_SEGMENT_INTERVAL_MS = 5000;
+let lastSegmentSentAt = 0;
+
 async function ensureOffscreenDocument(): Promise<void> {
   const has = await chrome.offscreen.hasDocument();
   if (has) return;
@@ -167,6 +171,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       activeCaptureTabId = tabId;
       activeSourceLanguage = sourceLanguage;
       activeTargetLanguage = targetLanguage;
+      lastSegmentSentAt = 0; // let the first segment of a new session through immediately
       await ensureOffscreenDocument();
       chrome.runtime.sendMessage({ type: "FLUENT_OFFSCREEN_START", streamId, tabId }).catch(() => {});
       chrome.tabs.sendMessage(tabId, { type: "FLUENT_TAB_CAPTURE_STARTED" }).catch(() => {});
@@ -197,6 +202,17 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "FLUENT_TAB_SEGMENT_READY") {
     const { tabId, audioBase64, mimeType } = message as { tabId: number; audioBase64: string; mimeType: string };
     if (tabId !== activeCaptureTabId) return undefined;
+    // Google's free tier caps generate_content_free_tier_requests at 15/min
+    // for this model, shared with /translate and /translate/lookup — VAD can
+    // trigger a new segment every second or two during normal conversation,
+    // which alone blows past that. Dropping a segment that arrives too soon
+    // after the last one we actually sent keeps this path under ~12/min,
+    // leaving headroom for the other two. A dropped segment just waits for
+    // the next one a moment later rather than reporting anything to the tab —
+    // it's neither "no speech" nor a failure, so touching that UI here would
+    // be misleading.
+    if (Date.now() - lastSegmentSentAt < MIN_SEGMENT_INTERVAL_MS) return undefined;
+    lastSegmentSentAt = Date.now();
     void (async () => {
       try {
         const res = await fetch(`${API_URL}/transcribe`, {

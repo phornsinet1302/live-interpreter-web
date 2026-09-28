@@ -42,6 +42,50 @@ function initializeGemini(): GoogleGenAI {
   }
 }
 
+// The free tier's generate_content_free_tier_requests quota (15 req/min for
+// gemini-3.5-flash-lite, shared across translate/transcribe/lookup on this
+// project) means a burst of real usage — the live tab-audio interpreter
+// alone can fire a request every couple seconds — routinely 429s. Google's
+// error body includes a RetryInfo.retryDelay hint for exactly this case;
+// one retry after that delay turns a transient over-quota moment into a
+// few seconds of extra latency instead of a hard failure, without needing
+// to move off the free tier.
+const DEFAULT_RETRY_DELAY_MS = 5000;
+const MAX_RETRY_DELAY_MS = 20000;
+
+function extractRetryDelayMs(error: unknown): number | null {
+  if (!(error instanceof Error)) return null;
+  const status = (error as { status?: number }).status;
+  if (status !== 429) return null;
+  try {
+    const parsed = JSON.parse(error.message) as {
+      error?: { details?: Array<{ "@type"?: string; retryDelay?: string }> };
+    };
+    const retryInfo = parsed.error?.details?.find((d) => d["@type"]?.endsWith("RetryInfo"));
+    const seconds = retryInfo?.retryDelay ? Number(retryInfo.retryDelay.replace(/s$/, "")) : null;
+    if (seconds && Number.isFinite(seconds)) {
+      return Math.min(seconds * 1000, MAX_RETRY_DELAY_MS);
+    }
+  } catch {
+    // Message wasn't the expected JSON shape — fall through to the default.
+  }
+  return DEFAULT_RETRY_DELAY_MS;
+}
+
+// Retries once on a 429 (RESOURCE_EXHAUSTED), waiting for Google's suggested
+// retryDelay first. Any other error, or a second failure, propagates as-is —
+// callers keep their existing catch/log/502 handling unchanged.
+export async function withGeminiRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    const delayMs = extractRetryDelayMs(error);
+    if (delayMs === null) throw error;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    return fn();
+  }
+}
+
 // Lazy initialization: Try to initialize on first access
 export const gemini = (() => {
   try {

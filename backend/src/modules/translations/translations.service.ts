@@ -1,7 +1,7 @@
 // Service -> business rules & orchestration. No req/res.
 import * as repo from "./translations.repository";
 import { getConversationForOwner } from "../conversations/conversations.service";
-import { gemini } from "../../lib/gemini";
+import { gemini, withGeminiRetry } from "../../lib/gemini";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
 import { toSkipTake, paginated, type PaginationQuery } from "../../utils/pagination";
@@ -89,16 +89,18 @@ export async function translateText(
   targetLanguage: string
 ): Promise<TranslateResult> {
   try {
-    const response = await gemini.models.generateContent({
-      model: TRANSLATION_MODEL,
-      contents: `Source language: ${sourceLanguage}\nTarget language: ${targetLanguage}\nText: ${text}`,
-      config: {
-        systemInstruction:
-          "You are a professional interpreter. Translate the user's message from the source language to the target language. " +
-          'Respond ONLY with JSON of the shape {"translatedText": string, "confidence": number between 0 and 1}.',
-        responseMimeType: "application/json",
-      },
-    });
+    const response = await withGeminiRetry(() =>
+      gemini.models.generateContent({
+        model: TRANSLATION_MODEL,
+        contents: `Source language: ${sourceLanguage}\nTarget language: ${targetLanguage}\nText: ${text}`,
+        config: {
+          systemInstruction:
+            "You are a professional interpreter. Translate the user's message from the source language to the target language. " +
+            'Respond ONLY with JSON of the shape {"translatedText": string, "confidence": number between 0 and 1}.',
+          responseMimeType: "application/json",
+        },
+      })
+    );
 
     const raw = response.text;
     if (!raw) throw new Error("Empty completion");
@@ -147,22 +149,24 @@ export async function lookupText(
       sourceLanguage === "auto"
         ? "Source language: auto-detect it from the text."
         : `Source language: ${sourceLanguage}`;
-    const response = await gemini.models.generateContent({
-      model: TRANSLATION_MODEL,
-      contents: `${sourceLine}\nTarget language: ${targetLanguage}\nText: ${text}`,
-      config: {
-        systemInstruction:
-          "You are a professional interpreter powering a browser extension's highlight-to-translate popover. " +
-          "Translate the given text into the target language. If it's a single word or short phrase (a dictionary-lookup " +
-          "case), also give a phonetic reading of the TRANSLATED text — this must be written in the LATIN/ROMAN alphabet " +
-          '(romanized pronunciation, e.g. for Khmer "លឿន" the phonetic is "leuun", NOT the Khmer script again), plus up ' +
-          "to 2 short example sentences in the target language's own native script using it naturally. If the text is a " +
-          "longer passage (more than roughly one sentence), it isn't a dictionary lookup — leave phonetic as an empty " +
-          'string and examples as an empty array rather than inventing something contrived. Respond ONLY with JSON of ' +
-          'the shape {"translatedText": string, "phonetic": string, "examples": string[], "confidence": number between 0 and 1}.',
-        responseMimeType: "application/json",
-      },
-    });
+    const response = await withGeminiRetry(() =>
+      gemini.models.generateContent({
+        model: TRANSLATION_MODEL,
+        contents: `${sourceLine}\nTarget language: ${targetLanguage}\nText: ${text}`,
+        config: {
+          systemInstruction:
+            "You are a professional interpreter powering a browser extension's highlight-to-translate popover. " +
+            "Translate the given text into the target language. If it's a single word or short phrase (a dictionary-lookup " +
+            "case), also give a phonetic reading of the TRANSLATED text — this must be written in the LATIN/ROMAN alphabet " +
+            '(romanized pronunciation, e.g. for Khmer "លឿន" the phonetic is "leuun", NOT the Khmer script again), plus up ' +
+            "to 2 short example sentences in the target language's own native script using it naturally. If the text is a " +
+            "longer passage (more than roughly one sentence), it isn't a dictionary lookup — leave phonetic as an empty " +
+            'string and examples as an empty array rather than inventing something contrived. Respond ONLY with JSON of ' +
+            'the shape {"translatedText": string, "phonetic": string, "examples": string[], "confidence": number between 0 and 1}.',
+          responseMimeType: "application/json",
+        },
+      })
+    );
 
     const raw = response.text;
     if (!raw) throw new Error("Empty completion");
