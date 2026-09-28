@@ -20,6 +20,6 @@ export async function remove(req: Request, res: Response) {
 }
 
 export async function download(req: Request, res: Response) {
-  const { filePath, filename } = await service.getDownloadPath(param(req, "id"), req.user!.id);
-  res.download(filePath, filename);
+  const url = await service.getDownloadUrl(param(req, "id"), req.user!.id);
+  res.redirect(url);
 }

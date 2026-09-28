@@ -1,17 +1,14 @@
 import path from "node:path";
-import { writeFile, unlink } from "node:fs/promises";
 import PDFDocument from "pdfkit";
 import { Document, Packer, Paragraph, HeadingLevel } from "docx";
 import * as repo from "./exports.repository";
 import * as notificationsService from "../notifications/notifications.service";
 import { getConversationForOwner } from "../conversations/conversations.service";
-import { env } from "../../config/env";
+import { uploadExportFile, deleteExportFile, exportDownloadUrl } from "../../lib/cloudinary";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../utils/api-error";
 import type { Export, ExportType } from "../../lib/prisma-client";
 import type { ExportFormat } from "./exports.validator";
-
-const EXPORTS_DIR = path.join(env.uploadsDir, "exports");
 
 // pdfkit's built-in fonts (Helvetica etc.) only cover WinAnsi/Latin-1 — any
 // other script comes out as mojibake, not just tofu. Noto Sans covers
@@ -181,10 +178,12 @@ export async function createExport(
 
   try {
     const doc = await buildDocument(type, conversationId);
-    const filename = `${record.id}.${format}`;
     const file = await renderFile(doc, format);
-    await writeFile(path.join(EXPORTS_DIR, filename), file);
-    const updated = await repo.updateStatus(record.id, "completed", filename);
+    await uploadExportFile(record.id, format, file);
+    // fileUrl holds just the format ("pdf"/"docx"/"txt") — the Cloudinary
+    // public_id is derived from the export's own id + format (see
+    // lib/cloudinary.ts), so there's no separate URL to persist.
+    const updated = await repo.updateStatus(record.id, "completed", format);
 
     await notificationsService.createForUser(userId, {
       title: "Export ready",
@@ -212,17 +211,14 @@ export async function getExport(id: string, userId: string): Promise<Export> {
 export async function deleteExport(id: string, userId: string) {
   const record = await getExport(id, userId);
   if (record.fileUrl) {
-    await unlink(path.join(EXPORTS_DIR, record.fileUrl)).catch((error) =>
+    await deleteExportFile(record.id, record.fileUrl).catch((error) =>
       logger.warn("Failed to remove export file", error)
     );
   }
   await repo.remove(id);
 }
 
-export async function getDownloadPath(
-  id: string,
-  userId: string
-): Promise<{ filePath: string; filename: string }> {
+export async function getDownloadUrl(id: string, userId: string): Promise<string> {
   const record = await getExport(id, userId);
   if (record.status !== "completed" || !record.fileUrl) {
     throw ApiError.conflict("This export is not ready for download");
@@ -231,11 +227,8 @@ export async function getDownloadPath(
   // Best-effort friendly filename — falls back to a generic one if the
   // conversation was deleted out from under a still-existing export record.
   const conversation = await getConversationForOwner(record.conversationId, userId).catch(() => null);
-  const extension = record.fileUrl.split(".").pop();
   const baseName = (conversation?.title ?? "conversation").replace(/[^\w\- ]+/g, "").trim() || "conversation";
+  const filename = `${baseName}-${record.type}.${record.fileUrl}`;
 
-  return {
-    filePath: path.join(EXPORTS_DIR, record.fileUrl),
-    filename: `${baseName}-${record.type}.${extension}`,
-  };
+  return exportDownloadUrl(record.id, record.fileUrl, filename);
 }

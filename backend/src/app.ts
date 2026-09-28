@@ -25,7 +25,6 @@ import { errorMiddleware } from "./middleware/error.middleware";
 
 function ensureUploadsDirs() {
   mkdirSync(path.join(env.uploadsDir, "avatars"), { recursive: true });
-  mkdirSync(path.join(env.uploadsDir, "exports"), { recursive: true });
 }
 
 // Dev-only: on top of the explicit CORS_ORIGINS allowlist, also accept any

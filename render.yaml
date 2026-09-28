@@ -1,7 +1,3 @@
-databases:
-  - name: live-interpreter-db
-    plan: free
-
 services:
   - type: web
     name: live-interpreter-backend
@@ -9,13 +5,13 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: free
+    preDeployCommand: pnpm --filter backend db:migrate
     envVars:
       - key: NODE_ENV
         value: production
+      # Neon Postgres, set manually in the Render dashboard (not a Render-managed DB).
       - key: DATABASE_URL
-        fromDatabase:
-          name: live-interpreter-db
-          property: connectionString
+        sync: false
       - key: CLERK_SECRET_KEY
         sync: false
       - key: CLERK_PUBLISHABLE_KEY
