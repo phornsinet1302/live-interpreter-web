@@ -67,7 +67,14 @@ async function doLookup(text: string): Promise<{ ok: true; result: LookupResult 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== CONTEXT_MENU_ID || !info.selectionText || !tab?.id) return;
   const outcome = await doLookup(info.selectionText);
-  chrome.tabs.sendMessage(tab.id, { type: "FLUENT_SHOW_RESULT", text: info.selectionText, outcome });
+  // No content script listening yet (e.g. right after an extension reload
+  // orphans already-open tabs' content scripts, or the page never got one
+  // injected) throws "Could not establish connection" — same as every other
+  // sendMessage call in this file, this shouldn't crash as an uncaught
+  // rejection over a lookup result the user just can't see this once.
+  chrome.tabs
+    .sendMessage(tab.id, { type: "FLUENT_SHOW_RESULT", text: info.selectionText, outcome })
+    .catch(() => {});
 });
 
 // Highlight-trigger-button path (see content.ts): the content script asks
