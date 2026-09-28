@@ -227,7 +227,13 @@ export async function getDownloadUrl(id: string, userId: string): Promise<string
   // Best-effort friendly filename — falls back to a generic one if the
   // conversation was deleted out from under a still-existing export record.
   const conversation = await getConversationForOwner(record.conversationId, userId).catch(() => null);
-  const baseName = (conversation?.title ?? "conversation").replace(/[^\w\- ]+/g, "").trim() || "conversation";
+  // Embedded directly into a Cloudinary fl_attachment:<filename> transformation
+  // flag below — spaces/commas/colons there break the transformation string
+  // (Cloudinary rejects the whole URL with "Invalid flag in transformation"),
+  // so this must be stricter than a normal filename sanitizer.
+  const baseName =
+    (conversation?.title ?? "conversation").replace(/[^\w-]+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "") ||
+    "conversation";
   const filename = `${baseName}-${record.type}.${record.fileUrl}`;
 
   return exportDownloadUrl(record.id, record.fileUrl, filename);

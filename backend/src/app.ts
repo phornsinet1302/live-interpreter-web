@@ -51,10 +51,16 @@ function corsOriginCheck(origin: string | undefined, callback: (err: Error | nul
   if (!origin) return callback(null, true); // same-origin / non-browser requests
   if (env.corsOrigins.includes(origin)) return callback(null, true);
   if (EXTENSION_ORIGIN.test(origin)) return callback(null, true);
-  try {
-    if (PRIVATE_LAN_HOSTNAME.test(new URL(origin).hostname)) return callback(null, true);
-  } catch {
-    // Malformed origin header — fall through to rejection below.
+  // Private-LAN allowance is dev-only (see comment above PRIVATE_LAN_HOSTNAME)
+  // — everything else in this function, extensions included, applies in
+  // production too, so this can't be gated by swapping the whole check out
+  // the way env.corsOrigins vs corsOriginCheck used to be at the call site.
+  if (!env.isProduction) {
+    try {
+      if (PRIVATE_LAN_HOSTNAME.test(new URL(origin).hostname)) return callback(null, true);
+    } catch {
+      // Malformed origin header — fall through to rejection below.
+    }
   }
   callback(new Error(`Origin not allowed by CORS: ${origin}`));
 }
@@ -76,7 +82,7 @@ export function createApp() {
   // cross-origin responses and the frontend falls back to a generic name.
   app.use(
     cors({
-      origin: env.isProduction ? env.corsOrigins : corsOriginCheck,
+      origin: corsOriginCheck,
       exposedHeaders: ["Content-Disposition"],
     })
   );
