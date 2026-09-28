@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import * as service from "./exports.service";
 import { param } from "../../utils/request";
 import { ApiError } from "../../utils/api-error";
+import { logger } from "../../lib/logger";
 import type { CreateExportInput } from "./exports.validator";
 
 export async function create(req: Request, res: Response) {
@@ -28,6 +29,12 @@ export async function download(req: Request, res: Response) {
   // transformation flag kept rejecting otherwise-valid filenames.
   const upstream = await fetch(target.url);
   if (!upstream.ok || !upstream.body) {
+    logger.error("Export file fetch from Cloudinary failed", {
+      url: target.url,
+      status: upstream.status,
+      statusText: upstream.statusText,
+      body: await upstream.text().catch(() => "<unreadable>"),
+    });
     throw new ApiError(502, "Failed to retrieve the export file", "EXPORT_FETCH_FAILED");
   }
 
