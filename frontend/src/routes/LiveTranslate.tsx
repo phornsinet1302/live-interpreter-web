@@ -134,18 +134,25 @@ export default function LiveTranslatePage({
         <BotanicalLeft />
       </div>
 
-      <div className="relative z-20 flex items-center justify-between px-8 py-5 border-b border-border/40">
-        <button onClick={onGoAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 font-['DM_Sans']">
+      {/* grid, not flex justify-between: a middle item can't be reliably
+          centered by justify-between (it just spaces gaps evenly between
+          unequal-width siblings), and absolute-centering it against the
+          header ignores the side content entirely — on a narrow viewport the
+          right-side cluster (icons + Sign in + Get started) is wider than
+          half the header and visually collided with the logo. Two
+          minmax(0,1fr) tracks flanking an auto-sized middle one give the
+          logo its own reserved column that content on either side can't
+          overlap, and shrink (rather than overflow into that column) if the
+          side content doesn't fit. */}
+      <div className="relative z-20 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-8 py-5 border-b border-border/40">
+        <button
+          onClick={onGoAbout}
+          className="justify-self-start text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 font-['DM_Sans']"
+        >
           Back
         </button>
-        {/* justify-between only spaces gaps evenly between the three items —
-            it doesn't center this one, since "Back" and the right-side
-            cluster aren't the same width. Absolute-centering it against the
-            header itself (relative, above) keeps it dead-center regardless
-            of how wide either side ends up (logged in vs out, fullscreen
-            icon present or not, etc.). */}
-        <Logo size="text-lg" className="absolute left-1/2 -translate-x-1/2" />
-        <div className="flex items-center gap-3">
+        <Logo size="text-lg" />
+        <div className="justify-self-end flex items-center gap-3 min-w-0">
           <button
             onClick={toggleFullscreen}
             aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
@@ -182,7 +189,7 @@ export default function LiveTranslatePage({
                   if (hasContent) { setShowExitModal(true); }
                   else onGoSignIn();
                 }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Sign in
               </button>
