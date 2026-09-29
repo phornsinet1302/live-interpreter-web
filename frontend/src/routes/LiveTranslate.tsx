@@ -138,7 +138,13 @@ export default function LiveTranslatePage({
         <button onClick={onGoAbout} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 font-['DM_Sans']">
           Back
         </button>
-        <Logo size="text-lg" />
+        {/* justify-between only spaces gaps evenly between the three items —
+            it doesn't center this one, since "Back" and the right-side
+            cluster aren't the same width. Absolute-centering it against the
+            header itself (relative, above) keeps it dead-center regardless
+            of how wide either side ends up (logged in vs out, fullscreen
+            icon present or not, etc.). */}
+        <Logo size="text-lg" className="absolute left-1/2 -translate-x-1/2" />
         <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
